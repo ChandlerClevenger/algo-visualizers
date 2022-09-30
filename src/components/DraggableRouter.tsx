@@ -33,7 +33,7 @@ export default function Router({
       handle=".router"
     >
       <div
-        className="position-absolute d-inline-block router cursor-grab"
+        className="position-absolute d-inline-block router"
         style={{ width: size }}
         id={id.toString()}
         onContextMenu={stopMenu}
