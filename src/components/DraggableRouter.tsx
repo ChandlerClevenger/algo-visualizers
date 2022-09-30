@@ -3,12 +3,10 @@ import Draggable from "react-draggable";
 import { RouterInt } from "../types/bin";
 
 export default function Router({
+  id,
+  onStart,
   onStop,
   onDrag,
-  id,
-  x,
-  y,
-  start,
   size,
   weight,
 }: RouterInt) {
@@ -21,11 +19,13 @@ export default function Router({
     e.stopPropagation();
     return false;
   }
+
+  function drag() {}
   return (
     <Draggable
       ref={draggableRef}
       allowAnyClick={true}
-      onStart={start}
+      onStart={onStart}
       onStop={onStop}
       onDrag={onDrag}
       bounds="#board"
@@ -34,7 +34,7 @@ export default function Router({
     >
       <div
         className="position-absolute d-inline-block router cursor-grab"
-        style={{ transform: `translate(${x}px, ${y}px)`, width: size }}
+        style={{ width: size }}
         id={id.toString()}
         onContextMenu={stopMenu}
       >
@@ -45,10 +45,8 @@ export default function Router({
           src="../images/router.png"
           alt="Placeable Router"
         />
-        <p className="text-sm text-center">Id: {id}</p>
-        <p className="text-sm text-center">
-          Weight: {weight == -1 ? "INF" : weight}
-        </p>
+        <p className="text-center m-0">Id: {id}</p>
+        <p className="text-center">Weight: {weight}</p>
       </div>
     </Draggable>
   );
