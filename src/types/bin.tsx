@@ -1,18 +1,21 @@
 export interface RouterInt extends Node {
-  onStop: any;
-  start: any;
   onDrag: any;
-  x: number;
-  y: number;
+  onStart: any;
+  onStop: any;
   size: number;
 }
 
 export interface LinePos {
   id: number;
-  x1: number;
-  x2: number;
-  y1: number;
-  y2: number;
+  firstConnector: NodePos;
+  secondConnector: NodePos;
+  weight: number;
+}
+
+export interface NodePos {
+  id: number; // Id of Node
+  x: number;
+  y: number;
 }
 
 export interface Node {
@@ -32,4 +35,10 @@ export interface Edge {
 export interface Graph {
   nodes: Node[];
   edges: Edge[];
+}
+
+export interface BoardData {
+  graph: Graph;
+  clickedRouterId: number;
+  rootRouterId: number;
 }
