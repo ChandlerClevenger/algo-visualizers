@@ -12,6 +12,7 @@ export default function Line({ id, firstConnector, secondConnector }: LinePos) {
     <>
       <line
         onClick={clicked}
+        className="line"
         id={`line-${id}`}
         x1={firstConnector.x}
         y1={firstConnector.y}
