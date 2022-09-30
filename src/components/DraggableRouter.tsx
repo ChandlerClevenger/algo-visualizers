@@ -20,7 +20,6 @@ export default function Router({
     return false;
   }
 
-  function drag() {}
   return (
     <Draggable
       ref={draggableRef}
