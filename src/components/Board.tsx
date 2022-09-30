@@ -78,6 +78,10 @@ export default function Board() {
     }
   }
 
+  function receiveRootNodeId(nodeId: number) {
+    setRootNodeId(nodeId);
+  }
+
   useEffect(() => {
     console.log("rendering ", linePositions);
   });
@@ -94,6 +98,7 @@ export default function Board() {
           sendUpNodePos={receiveNodePos}
           sendUpNodes={receiveNodes}
           sendUpClickedNodeData={receiveClickedNodeData}
+          sendUpRootNodeId={receiveRootNodeId}
         ></Routers>
       </div>
     </>

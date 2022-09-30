@@ -9,6 +9,7 @@ export default function Routers({
   sendUpNodes,
   sendUpClickedNodeData,
   sendUpNodePos,
+  sendUpRootNodeId,
 }: any) {
   const INITIAL_ROUTER: RouterInt = {
     id: 0,
@@ -22,6 +23,7 @@ export default function Routers({
   };
 
   const [routers, setRouters] = useState<RouterInt[]>([INITIAL_ROUTER]);
+  let [isDragging, setIsDragging] = useState<boolean>(false);
   let currentDraggedRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -29,18 +31,23 @@ export default function Routers({
   }, [routers]);
 
   function stop(e: MouseEvent, info: DraggableData) {
+    setIsDragging(false);
     const DRAGGED_ID = Number(info.node.id);
     const { x, y } = { ...info };
     // Must move at least 100 px out of start area
     if (x < 100 && y < 100) return;
     // Detect click
     if (currentDraggedRef.current.x == x && currentDraggedRef.current.y == y) {
-      sendUpClickedNodeData(
-        routers.find((r) => {
-          return r.id == DRAGGED_ID;
-        }),
-        { id: DRAGGED_ID, x: info.x + CENTER_OFFSET, y: info.y + CENTER_OFFSET }
-      );
+      switch (e.button) {
+        case 0:
+          handleLeftClick(info);
+          break;
+        case 2:
+          handleRightClick(DRAGGED_ID);
+          break;
+        default:
+          break;
+      }
       return;
     }
     if (DRAGGED_ID == routers.length - 1) {
@@ -65,6 +72,7 @@ export default function Routers({
   }
 
   function drag(e: MouseEvent, info: DraggableData) {
+    setIsDragging(true);
     sendUpNodePos({
       id: Number(info.node.id),
       x: info.x + CENTER_OFFSET,
@@ -76,6 +84,22 @@ export default function Routers({
     return parseInt(uid.replace("-", ""), 16);
   }
 
+  function handleRightClick(rootId: number) {
+    sendUpRootNodeId(rootId);
+  }
+
+  function handleLeftClick(info: DraggableData) {
+    sendUpClickedNodeData(
+      routers.find((r) => {
+        return r.id == Number(info.node.id);
+      }),
+      {
+        id: Number(info.node.id),
+        x: info.x + CENTER_OFFSET,
+        y: info.y + CENTER_OFFSET,
+      }
+    );
+  }
   return (
     <div id="routers" className="position-absolute w-100 h-100">
       {routers.map((router, index) => (
