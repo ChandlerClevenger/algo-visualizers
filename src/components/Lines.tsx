@@ -1,19 +1,18 @@
-import { useState } from "react";
-import { Edge, LinePos } from "../types/bin";
+import { LinePos } from "../types/bin";
 import Line from "./Line";
 
-export default function Lines({ sendUpEdges }: any) {
-  const [linePositions, setLinePositions] = useState<LinePos[]>([]);
-
-  function updateLines(edges: Edge[]) {
-    sendUpEdges(edges);
-  }
-
+export default function Lines({ linePositions }: any) {
   return (
-    <>
-      {linePositions.map((pos) => (
-        <Line {...pos}></Line>
+    <svg id="lines" className="position-absolute w-100 h-100">
+      {linePositions.map((linePos: LinePos, index: number) => (
+        <Line
+          key={index}
+          id={linePos.id}
+          firstConnector={linePos.firstConnector}
+          secondConnector={linePos.secondConnector}
+          weight={linePos.weight}
+        ></Line>
       ))}
-    </>
+    </svg>
   );
 }
