@@ -98,7 +98,7 @@ export default function Routers({
     );
   }
   return (
-    <div id="routers" className="position-absolute w-100 h-100">
+    <>
       {routers.map((router, index) => (
         <Router
           key={index}
@@ -112,6 +112,6 @@ export default function Routers({
           weight={router.weight}
         ></Router>
       ))}
-    </div>
+    </>
   );
 }
