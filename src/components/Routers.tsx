@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { DraggableData } from "react-draggable";
-import { Node, NodePos, RouterInt } from "../types/bin";
+import { RouterInt } from "../types/bin";
 import Router from "./DraggableRouter";
 const ROUTER_SIZE = 75;
-const LINE_OFFSET = ROUTER_SIZE / 2;
+const CENTER_OFFSET = ROUTER_SIZE / 2;
 
 export default function Routers({
   sendUpNodes,
@@ -39,7 +39,7 @@ export default function Routers({
         routers.find((r) => {
           return r.id == DRAGGED_ID;
         }),
-        { id: DRAGGED_ID, x: info.x, y: info.y }
+        { id: DRAGGED_ID, x: info.x + CENTER_OFFSET, y: info.y + CENTER_OFFSET }
       );
       return;
     }
@@ -65,7 +65,11 @@ export default function Routers({
   }
 
   function drag(e: MouseEvent, info: DraggableData) {
-    sendUpNodePos({ id: Number(info.node.id), x: info.x, y: info.y });
+    sendUpNodePos({
+      id: Number(info.node.id),
+      x: info.x + CENTER_OFFSET,
+      y: info.y + CENTER_OFFSET,
+    });
   }
 
   function generateId(uid: string): number {
@@ -73,7 +77,7 @@ export default function Routers({
   }
 
   return (
-    <>
+    <div id="routers" className="position-absolute w-100 h-100">
       {routers.map((router, index) => (
         <Router
           key={index}
@@ -87,6 +91,6 @@ export default function Routers({
           weight={router.weight}
         ></Router>
       ))}
-    </>
+    </div>
   );
 }
