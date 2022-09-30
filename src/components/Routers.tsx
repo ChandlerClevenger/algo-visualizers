@@ -23,7 +23,6 @@ export default function Routers({
   };
 
   const [routers, setRouters] = useState<RouterInt[]>([INITIAL_ROUTER]);
-  let [isDragging, setIsDragging] = useState<boolean>(false);
   let currentDraggedRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -31,7 +30,6 @@ export default function Routers({
   }, [routers]);
 
   function stop(e: MouseEvent, info: DraggableData) {
-    setIsDragging(false);
     const DRAGGED_ID = Number(info.node.id);
     const { x, y } = { ...info };
     // Must move at least 100 px out of start area
@@ -72,7 +70,6 @@ export default function Routers({
   }
 
   function drag(e: MouseEvent, info: DraggableData) {
-    setIsDragging(true);
     sendUpNodePos({
       id: Number(info.node.id),
       x: info.x + CENTER_OFFSET,
