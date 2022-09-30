@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Edge, LinePos, Node, NodePos } from "../types/bin";
 import Routers from "./Routers";
 import Lines from "./Lines";
@@ -7,24 +7,28 @@ export default function Board() {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [linePositions, setLinePositions] = useState<LinePos[]>([]);
   const [clickedNode, setClickedNode] = useState<Node | null>(null);
-  const [clickedNodePos, setClickedNodePos] = useState<NodePos | null>(null);
   const [rootNodeId, setRootNodeId] = useState<number>(0);
+  const clickedNodePos = useRef<NodePos | null>(null);
 
   function receiveNodes(listOfNodes: Node[]): void {
     setNodes(listOfNodes);
   }
 
   function receiveClickedNodeData(node: Node, nodePos: NodePos): void {
-    if (
-      !clickedNode ||
-      !clickedNodePos ||
-      !nodePos ||
-      clickedNode.id === node.id
-    ) {
+    if (!clickedNode || !nodePos || clickedNode.id === node.id) {
       setClickedNode(node);
-      setClickedNodePos(nodePos);
+      clickedNodePos.current = nodePos;
       return;
     }
+    // Prevent duplicate connections
+    for (const edge of edges) {
+      const edgeNodeIds = [edge.firstNode.id, edge.secondNode.id];
+      if (edgeNodeIds.includes(node.id) && edgeNodeIds.includes(clickedNode.id))
+        return;
+    }
+    // Ensure firstConnector is not null
+    const firstConnector = clickedNodePos.current;
+    if (!firstConnector) return;
     setEdges((oldEdges) => [
       ...oldEdges,
       {
@@ -34,37 +38,44 @@ export default function Board() {
         weight: 0,
       },
     ]);
+
     setLinePositions((oldPos) => [
       ...oldPos,
       {
         id: edges.length,
-        firstConnector: clickedNodePos,
+        firstConnector: firstConnector,
         secondConnector: nodePos,
         weight: 0,
       },
     ]);
-    setClickedNodePos(null);
+    clickedNodePos.current = null;
     setClickedNode(null);
   }
 
-  function receiveNodePos(nodePos: any) {
-    // Update linePositions on nodePos update
-    setLinePositions((oldPos) =>
-      oldPos.map((pos) => {
-        if (nodePos.id in [pos.firstConnector.id, pos.secondConnector.id]) {
-          return nodePos.id === pos.firstConnector.id
-            ? {
+  function receiveNodePos(nodePos: NodePos) {
+    // Check if node has connection to prevent re-renders
+    for (const edge of edges) {
+      const edgeNodeIds = [edge.firstNode.id, edge.secondNode.id];
+      if (edgeNodeIds.includes(nodePos.id)) {
+        // Update linePositions on nodePos update
+        setLinePositions((oldPos) =>
+          oldPos.map((pos) => {
+            if (pos.firstConnector.id === nodePos.id) {
+              return {
                 ...pos,
                 firstConnector: nodePos,
-              }
-            : {
+              };
+            } else if (pos.secondConnector.id === nodePos.id) {
+              return {
                 ...pos,
                 secondConnector: nodePos,
               };
-        }
-        return pos;
-      })
-    );
+            }
+            return pos;
+          })
+        );
+      }
+    }
   }
 
   useEffect(() => {
@@ -78,7 +89,9 @@ export default function Board() {
           Currently Clicked: {clickedNode?.id ?? "None"}
           &nbsp; Root Node: {rootNodeId}
         </p>
-        <Lines {...linePositions}></Lines>
+        <svg id="lines" className="position-absolute w-100 h-100">
+          <Lines linePositions={linePositions}></Lines>
+        </svg>
         <Routers
           sendUpNodePos={receiveNodePos}
           sendUpNodes={receiveNodes}
