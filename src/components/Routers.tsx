@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { DraggableData } from "react-draggable";
 import { Node, NodePos, RouterInt } from "../types/bin";
 import Router from "./DraggableRouter";
-import { uuid } from "uuidv4";
 const ROUTER_SIZE = 75;
 const LINE_OFFSET = ROUTER_SIZE / 2;
 
