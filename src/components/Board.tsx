@@ -89,9 +89,7 @@ export default function Board() {
           Currently Clicked: {clickedNode?.id ?? "None"}
           &nbsp; Root Node: {rootNodeId}
         </p>
-        <svg id="lines" className="position-absolute w-100 h-100">
-          <Lines linePositions={linePositions}></Lines>
-        </svg>
+        <Lines linePositions={linePositions}></Lines>
         <Routers
           sendUpNodePos={receiveNodePos}
           sendUpNodes={receiveNodes}
