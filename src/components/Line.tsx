@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { LinePos } from "../types/bin";
-export default function Line({ id, x1, y1, x2, y2 }: LinePos) {
+export default function Line({ id, firstConnector, secondConnector }: LinePos) {
   const [weight, setWeight] = useState<number>(0);
   function clicked() {
     const w = prompt("Enter a number: ");
@@ -13,10 +13,10 @@ export default function Line({ id, x1, y1, x2, y2 }: LinePos) {
       <line
         onClick={clicked}
         id={`line-${id}`}
-        x1={x1}
-        y1={y1}
-        x2={x2}
-        y2={y2}
+        x1={firstConnector.x}
+        y1={firstConnector.y}
+        x2={secondConnector.x}
+        y2={secondConnector.y}
         strokeWidth={3}
         stroke={"yellow"}
       />
@@ -24,8 +24,8 @@ export default function Line({ id, x1, y1, x2, y2 }: LinePos) {
         id={`line-weight-${id}`}
         onClick={clicked}
         strokeWidth={1}
-        y={(y1 + y2 + 30) / 2}
-        x={(x1 + x2) / 2}
+        y={(firstConnector.y + secondConnector.y + 30) / 2}
+        x={(firstConnector.x + secondConnector.x) / 2}
       >
         {weight}
       </text>
