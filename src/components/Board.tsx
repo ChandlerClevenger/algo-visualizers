@@ -5,7 +5,7 @@ import Lines from "./Lines";
 export default function Board() {
   const [edges, setEdges] = useState<Edge[]>([]);
   const [nodes, setNodes] = useState<Node[]>([]);
-  const [linePositions, setLinePositions] = useState<LinePos[]>([]);
+  const [linePositions, setLinePos] = useState<LinePos[]>([]);
   const [clickedNode, setClickedNode] = useState<Node | null>(null);
   const [rootNodeId, setRootNodeId] = useState<number>(0);
   const clickedNodePos = useRef<NodePos | null>(null);
@@ -39,8 +39,8 @@ export default function Board() {
       },
     ]);
 
-    setLinePositions((oldPos) => [
-      ...oldPos,
+    setLinePos((oldLinePos) => [
+      ...oldLinePos,
       {
         id: edges.length,
         firstConnector: firstConnector,
@@ -58,20 +58,20 @@ export default function Board() {
       const edgeNodeIds = [edge.firstNode.id, edge.secondNode.id];
       if (edgeNodeIds.includes(nodePos.id)) {
         // Update linePositions on nodePos update
-        setLinePositions((oldPos) =>
-          oldPos.map((pos) => {
-            if (pos.firstConnector.id === nodePos.id) {
+        setLinePos((oldLinePos) =>
+          oldLinePos.map((linePos) => {
+            if (linePos.firstConnector.id === nodePos.id) {
               return {
-                ...pos,
+                ...linePos,
                 firstConnector: nodePos,
               };
-            } else if (pos.secondConnector.id === nodePos.id) {
+            } else if (linePos.secondConnector.id === nodePos.id) {
               return {
-                ...pos,
+                ...linePos,
                 secondConnector: nodePos,
               };
             }
-            return pos;
+            return linePos;
           })
         );
       }
@@ -80,6 +80,35 @@ export default function Board() {
 
   function receiveRootNodeId(nodeId: number) {
     setRootNodeId(nodeId);
+  }
+
+  function receiveWeightChange(lineId: number, weight: number) {
+    console.log(`LineId: ${lineId}| Weight: ${weight}`);
+    // Update edges
+    setEdges((oldEdges) =>
+      oldEdges.map((e) => {
+        if (e.id === lineId) {
+          return {
+            ...e,
+            weight: weight,
+          };
+        }
+        return e;
+      })
+    );
+
+    // Update Lines
+    setLinePos((oldLinePos) =>
+      oldLinePos.map((l) => {
+        if (l.id === lineId) {
+          return {
+            ...l,
+            weight: weight,
+          };
+        }
+        return l;
+      })
+    );
   }
 
   useEffect(() => {
@@ -93,12 +122,15 @@ export default function Board() {
           Currently Clicked: {clickedNode?.id ?? "None"}
           &nbsp; Root Node: {rootNodeId}
         </p>
-        <Lines linePositions={linePositions}></Lines>
+        <Lines
+          linePositions={linePositions}
+          onWeightChange={receiveWeightChange}
+        ></Lines>
         <Routers
-          sendUpNodePos={receiveNodePos}
-          sendUpNodes={receiveNodes}
-          sendUpClickedNodeData={receiveClickedNodeData}
-          sendUpRootNodeId={receiveRootNodeId}
+          onSendRouterPos={receiveNodePos}
+          onSendRouters={receiveNodes}
+          onSendClickedRouterData={receiveClickedNodeData}
+          onSendRootId={receiveRootNodeId}
         ></Routers>
       </div>
     </>
