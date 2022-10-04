@@ -1,3 +1,5 @@
+import React from "react";
+
 export interface RouterInt extends Node {
   onDrag: any;
   onStart: any;
@@ -6,11 +8,15 @@ export interface RouterInt extends Node {
 }
 
 export interface LinePos {
-  id: number;
+  id: number; // Id of Edge
   firstConnector: NodePos;
   secondConnector: NodePos;
   weight: number;
 }
+
+export type LineData = LinePos & {
+  clicked(event: React.MouseEvent<SVGLineElement | SVGTextElement>): void; // Updates weight of line
+};
 
 export interface NodePos {
   id: number; // Id of Node
@@ -20,8 +26,8 @@ export interface NodePos {
 
 export interface Node {
   id: number;
-  prevNode: Node | null;
-  nextNode: Node | null;
+  prevNode?: Node; //Initially will be undefined
+  nextNode?: Node; //Initially will be undefined
   weight: number;
 }
 
