@@ -6,18 +6,16 @@ const ROUTER_SIZE = 75;
 const CENTER_OFFSET = ROUTER_SIZE / 2;
 
 export default function Routers({
-  sendUpNodes,
-  sendUpClickedNodeData,
-  sendUpNodePos,
-  sendUpRootNodeId,
+  onSendRouters,
+  onSendClickedRouterData,
+  onSendRouterPos,
+  onSendRootId,
 }: any) {
   const INITIAL_ROUTER: RouterInt = {
     id: 0,
     onDrag: drag,
     onStart: start,
     onStop: stop,
-    prevNode: null,
-    nextNode: null,
     size: ROUTER_SIZE,
     weight: Infinity,
   };
@@ -26,7 +24,7 @@ export default function Routers({
   let currentDraggedRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    sendUpNodes([...routers]);
+    onSendRouters([...routers]);
   }, [routers]);
 
   function stop(e: MouseEvent, info: DraggableData) {
@@ -56,8 +54,6 @@ export default function Routers({
           onStart: start,
           onStop: stop,
           onDrag: drag,
-          prevNode: null,
-          nextNode: null,
           size: ROUTER_SIZE,
           weight: Infinity,
         },
@@ -70,7 +66,7 @@ export default function Routers({
   }
 
   function drag(e: MouseEvent, info: DraggableData) {
-    sendUpNodePos({
+    onSendRouterPos({
       id: Number(info.node.id),
       x: info.x + CENTER_OFFSET,
       y: info.y + CENTER_OFFSET,
@@ -82,11 +78,11 @@ export default function Routers({
   }
 
   function handleRightClick(rootId: number) {
-    sendUpRootNodeId(rootId);
+    onSendRootId(rootId);
   }
 
   function handleLeftClick(info: DraggableData) {
-    sendUpClickedNodeData(
+    onSendClickedRouterData(
       routers.find((r) => {
         return r.id == Number(info.node.id);
       }),
