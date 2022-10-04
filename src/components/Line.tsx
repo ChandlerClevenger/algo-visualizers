@@ -1,13 +1,12 @@
-import { useState } from "react";
-import { LinePos } from "../types/bin";
-export default function Line({ id, firstConnector, secondConnector }: LinePos) {
-  const [weight, setWeight] = useState<number>(0);
-  function clicked() {
-    const w = prompt("Enter a number: ");
-    if (w && isNaN(Number(w))) throw TypeError("NAN or nothing entered.");
-    setWeight(Number(w));
-  }
+import { LineData } from "../types/bin";
 
+export default function Line({
+  id,
+  firstConnector,
+  secondConnector,
+  clicked,
+  weight,
+}: LineData) {
   return (
     <>
       <line
