@@ -1,106 +1,106 @@
-import { Edge, Node } from "../types/bin";
+import { Edge, Graph, Node } from "../types/bin";
 export default class Dijkstra {
-  performDijkstra(edges: Edge[], nodes: number[], startingNode: number) {
-    let dontBreakCounter = 0;
-    const visitedNodes: number[] | undefined = [];
-    let currentNode: number | undefined = startingNode;
-    let finalConnections = this._initializeFinalConnections(
-      edges,
-      nodes,
-      currentNode
-    );
-    visitedNodes.push(currentNode);
+  performDijkstra(edges: Edge[], nodes: Node[], startingNode: Node): Graph {
+    let failsafe = 0;
+    let unVisitedNodeIds: number[] = [
+      ...nodes.map((n) => {
+        return n.id;
+      }),
+    ];
+    // Set startingNode distance to 0 and mark as visited
+    nodes = this._setNodeData(nodes, startingNode, 0, startingNode);
+    let currentNode = nodes.find((n) => {
+      return n.id === startingNode.id;
+    });
+    if (!currentNode) throw Error("Invalid starting node");
 
-    while (visitedNodes.length != nodes.length) {
-      dontBreakCounter += 1;
-      if (dontBreakCounter > 1000) break;
-      currentNode = this._pickBestNode(finalConnections, nodes, visitedNodes);
-      if (!currentNode) continue;
-      visitedNodes.push(currentNode);
+    unVisitedNodeIds = this._setNodeVisited(unVisitedNodeIds, currentNode.id);
 
-      finalConnections = this._updateConnections(
-        finalConnections,
-        edges,
-        currentNode
-      );
-    }
-    const finalConnectionsList = [];
-    for (const [key, value] of Object.entries(finalConnections)) {
-      finalConnectionsList.push(value);
-    }
-    return finalConnectionsList;
-  }
+    while (unVisitedNodeIds.length) {
+      console.log("\n\nFailsafe ", failsafe);
+      if (failsafe > 1000) break;
+      failsafe += 1;
+      // Collect Neighbors and filter
+      let consideredEdges = this._getNodesEdges(edges, currentNode);
+      consideredEdges = consideredEdges.filter((e) => {
+        if (!currentNode) throw Error("No Current Node");
+        const nonCurrentNode = this._getNonCurrentNodeFromEdge(e, currentNode);
+        if (unVisitedNodeIds.includes(nonCurrentNode.id)) {
+          return e;
+        }
+      });
 
-  _updateConnections(
-    finalConnections: any,
-    edges: Edge[],
-    currentNode: number
-  ) {
-    for (const edge of edges) {
-      if (
-        edge.firstNode.id == currentNode ||
-        edge.secondNode.id == currentNode
-      ) {
-        const notCurrent =
-          edge.firstNode.id == currentNode ? edge.secondNode : edge.firstNode;
-        const currNode =
-          edge.firstNode == notCurrent ? edge.secondNode : edge.firstNode;
-        if (
-          finalConnections[currNode.id].weight + edge.weight <
-          finalConnections[notCurrent.id].weight
-        ) {
-          finalConnections[notCurrent.id] = {
-            weight: finalConnections[currNode.id].weight + edge.weight,
-            prevNode: currNode,
-          };
+      // Update neighbors
+      for (const edge of consideredEdges) {
+        const nonCurrentNode = this._getNonCurrentNodeFromEdge(
+          edge,
+          currentNode
+        );
+        if (!unVisitedNodeIds.includes(nonCurrentNode.id)) continue;
+
+        if (nonCurrentNode.weight > currentNode.weight + edge.weight) {
+          nodes = this._setNodeData(
+            nodes,
+            nonCurrentNode,
+            currentNode.weight + edge.weight,
+            currentNode
+          );
         }
       }
+      // Mark node as visites
+      unVisitedNodeIds = this._setNodeVisited(unVisitedNodeIds, currentNode.id);
+      if (!unVisitedNodeIds.length) continue;
+      // Pick new node from unVisited nodes
+      const pickedNode: Node = this._pickBestNode(nodes, unVisitedNodeIds);
+      currentNode = pickedNode;
     }
-    return finalConnections;
+
+    return { edges: edges, nodes: nodes };
   }
 
-  _initializeFinalConnections(
-    edges: Edge[],
-    nodes: number[],
-    currentNode: number
-  ) {
-    const initCons: any = {};
-    initCons[currentNode] = { weight: 0, prevNode: currentNode };
+  _pickBestNode(nodes: Node[], currentVisitedIds: number[]): Node {
+    // Greedily pick non-visited, lowest-weight node
+    let nodesLeft = nodes.filter((n) => {
+      return currentVisitedIds.includes(n.id);
+    });
+    return nodesLeft.reduce((prev, cur) => {
+      return prev.weight > cur.weight ? cur : prev;
+    });
+  }
 
-    for (const edge of edges) {
+  _setNodeData(nodes: Node[], node: Node, weight: number, prevNode: Node) {
+    return nodes.map((n) => {
+      if (n.id === node.id) {
+        return {
+          ...n,
+          weight: weight,
+          prevNode: prevNode,
+        };
+      }
+      return n;
+    });
+  }
+
+  _getNodesEdges(edges: Edge[], currentNode: Node): Edge[] {
+    return edges.filter((e) => {
       if (
-        edge.firstNode.id == currentNode ||
-        edge.secondNode.id == currentNode
+        e.firstNode.id === currentNode.id ||
+        e.secondNode.id === currentNode.id
       ) {
-        const notCurrent =
-          edge.firstNode.id == currentNode ? edge.secondNode : edge.firstNode;
-        const prevNode =
-          edge.firstNode == notCurrent ? edge.secondNode : edge.firstNode;
-        initCons[notCurrent.id] = { weight: edge.weight, prevNode: prevNode };
+        return e;
       }
-    }
-
-    for (const node of nodes) {
-      if (!initCons[node]) {
-        initCons[node] = { weight: Infinity, prevNode: null };
-      }
-    }
-    return initCons;
+    });
   }
 
-  _pickBestNode(
-    finalConnections: any,
-    nodes: number[],
-    visitedNodes: number[]
-  ): number | undefined {
-    const nodesToVisit = nodes.filter((node) => !visitedNodes.includes(node));
-    let minNode = nodesToVisit[0];
-    for (const node of nodesToVisit) {
-      if (!minNode) continue;
-      if (finalConnections[node].weight < finalConnections[minNode].weight) {
-        minNode = node;
-      }
-    }
-    return minNode;
+  _setNodeVisited(unVisitedNodeIds: number[], nodeId: number) {
+    return unVisitedNodeIds.filter((n) => {
+      return n !== nodeId;
+    });
+  }
+
+  _getNonCurrentNodeFromEdge(edge: Edge, currentNode: Node): Node {
+    return edge.firstNode.id === currentNode.id
+      ? edge.secondNode
+      : edge.firstNode;
   }
 }
