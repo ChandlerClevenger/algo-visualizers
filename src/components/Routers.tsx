@@ -1,31 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { DraggableData } from "react-draggable";
-import { RouterInt } from "../types/bin";
+import { RouterInt, Node } from "../types/bin";
 import Router from "./DraggableRouter";
 const ROUTER_SIZE = 75;
 const CENTER_OFFSET = ROUTER_SIZE / 2;
 
 export default function Routers({
-  onSendRouters,
+  nodes,
+  onAddNewRouter,
   onSendClickedRouterData,
   onSendRouterPos,
   onSendRootId,
 }: any) {
-  const INITIAL_ROUTER: RouterInt = {
-    id: 0,
-    onDrag: drag,
-    onStart: start,
-    onStop: stop,
-    size: ROUTER_SIZE,
-    weight: Infinity,
-  };
-
-  const [routers, setRouters] = useState<RouterInt[]>([INITIAL_ROUTER]);
   let currentDraggedRef = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    onSendRouters([...routers]);
-  }, [routers]);
 
   function stop(e: MouseEvent, info: DraggableData) {
     const DRAGGED_ID = Number(info.node.id);
@@ -46,18 +33,9 @@ export default function Routers({
       }
       return;
     }
-    if (DRAGGED_ID == routers.length - 1) {
-      setRouters((oldR) => [
-        ...oldR,
-        {
-          id: routers.length,
-          onStart: start,
-          onStop: stop,
-          onDrag: drag,
-          size: ROUTER_SIZE,
-          weight: Infinity,
-        },
-      ]);
+    if (DRAGGED_ID == nodes.length - 1) {
+      // Tell Board to make new node
+      onAddNewRouter();
     }
   }
 
@@ -83,7 +61,7 @@ export default function Routers({
 
   function handleLeftClick(info: DraggableData) {
     onSendClickedRouterData(
-      routers.find((r) => {
+      nodes.find((r: Node) => {
         return r.id == Number(info.node.id);
       }),
       {
@@ -95,15 +73,14 @@ export default function Routers({
   }
   return (
     <>
-      {routers.map((router, index) => (
+      {nodes.map((router: Node, index: number) => (
         <Router
           key={index}
           id={router.id}
           onStart={start}
           onStop={stop}
           onDrag={drag}
-          size={router.size}
-          nextNode={router.nextNode}
+          size={75}
           prevNode={router.prevNode}
           weight={router.weight}
         ></Router>
