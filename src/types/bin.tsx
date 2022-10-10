@@ -27,7 +27,6 @@ export interface NodePos {
 export interface Node {
   id: number;
   prevNode?: Node; //Initially will be undefined
-  nextNode?: Node; //Initially will be undefined
   weight: number;
 }
 
