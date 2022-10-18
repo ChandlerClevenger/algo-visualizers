@@ -9,22 +9,24 @@ export default class Dijkstra {
     ];
     // Set startingNode distance to 0 and mark as visited
     nodes = this._setNodeData(nodes, startingNode, 0, startingNode);
+    // Assume Inf distance of all nonStartingNodes and reset prevNodes
+    for (const node of nodes) {
+      if (node.id === startingNode.id) continue;
+      nodes = this._setNodeData(nodes, node, Infinity, undefined);
+    }
     let currentNode = nodes.find((n) => {
       return n.id === startingNode.id;
     });
     if (!currentNode) throw Error("Invalid starting node");
 
-    unVisitedNodeIds = this._setNodeVisited(unVisitedNodeIds, currentNode.id);
-
     while (unVisitedNodeIds.length) {
-      console.log("\n\nFailsafe ", failsafe);
       if (failsafe > 1000) break;
       failsafe += 1;
       // Collect Neighbors and filter
       let consideredEdges = this._getNodesEdges(edges, currentNode);
       consideredEdges = consideredEdges.filter((e) => {
         if (!currentNode) throw Error("No Current Node");
-        const nonCurrentNode = this._getNonCurrentNodeFromEdge(e, currentNode);
+        const nonCurrentNode = this._getNonCurrentNodeFromEdge(nodes, e, currentNode);
         if (unVisitedNodeIds.includes(nonCurrentNode.id)) {
           return e;
         }
@@ -33,11 +35,10 @@ export default class Dijkstra {
       // Update neighbors
       for (const edge of consideredEdges) {
         const nonCurrentNode = this._getNonCurrentNodeFromEdge(
+          nodes,
           edge,
           currentNode
         );
-        if (!unVisitedNodeIds.includes(nonCurrentNode.id)) continue;
-
         if (nonCurrentNode.weight > currentNode.weight + edge.weight) {
           nodes = this._setNodeData(
             nodes,
@@ -68,7 +69,7 @@ export default class Dijkstra {
     });
   }
 
-  _setNodeData(nodes: Node[], node: Node, weight: number, prevNode: Node) {
+  _setNodeData(nodes: Node[], node: Node, weight: number, prevNode: Node | undefined) {
     return nodes.map((n) => {
       if (n.id === node.id) {
         return {
@@ -98,9 +99,14 @@ export default class Dijkstra {
     });
   }
 
-  _getNonCurrentNodeFromEdge(edge: Edge, currentNode: Node): Node {
-    return edge.firstNode.id === currentNode.id
-      ? edge.secondNode
-      : edge.firstNode;
+  _getNonCurrentNodeFromEdge(nodes: Node[], edge: Edge, currentNode: Node): Node {
+    // Find which node is not the current
+    let nonCurrent: Node | undefined = edge.firstNode.id === currentNode.id
+    ? edge.secondNode
+    : edge.firstNode;
+    // Return the nonCurrent node from nodes as it has live values
+    nonCurrent = nodes.find((n) => {return nonCurrent && n.id === nonCurrent.id});
+    if (!nonCurrent) {throw Error(`Can not find currentNode`)}
+    return nonCurrent;
   }
 }
