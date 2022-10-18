@@ -5,7 +5,7 @@ import Lines from "./Lines";
 import Dijkstra from "../algs/Dijkstra";
 export default function Board() {
   const [edges, setEdges] = useState<Edge[]>([]);
-  const [nodes, setNodes] = useState<Node[]>([{ id: 0, weight: Infinity }]);
+  const [nodes, setNodes] = useState<Node[]>([{ id: 0, weight: Infinity, prevNode: undefined }]);
   const [linePositions, setLinePos] = useState<LinePos[]>([]);
   const [clickedNode, setClickedNode] = useState<Node | null>(null);
   const [rootNodeId, setRootNodeId] = useState<number>(0);
@@ -17,6 +17,7 @@ export default function Board() {
       {
         id: nodes.length,
         weight: Infinity,
+        prevNode: undefined
       },
     ]);
   }
