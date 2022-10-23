@@ -8,3 +8,14 @@
 .router:active {
   cursor: grabbing;
 }
+
+.blink-line {
+  animation: blink 1s 4;
+}
+
+/* Animations */
+@keyframes blink {
+  100% {
+    stroke: #f00;
+  }
+}
