@@ -38,6 +38,7 @@ export default function Router({
         onContextMenu={stopMenu}
       >
         <img
+          id={`router-img-${id}`}
           draggable={false}
           className="w-100"
           onClick={(e) => e.preventDefault()}
