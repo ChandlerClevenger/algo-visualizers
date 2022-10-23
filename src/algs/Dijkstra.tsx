@@ -8,11 +8,11 @@ export default class Dijkstra {
       }),
     ];
     // Set startingNode distance to 0 and mark as visited
-    nodes = this._setNodeData(nodes, startingNode, 0, startingNode);
+    nodes = this.#setNodeData(nodes, startingNode, 0, startingNode);
     // Assume Inf distance of all nonStartingNodes and reset prevNodes
     for (const node of nodes) {
       if (node.id === startingNode.id) continue;
-      nodes = this._setNodeData(nodes, node, Infinity, undefined);
+      nodes = this.#setNodeData(nodes, node, Infinity, undefined);
     }
     let currentNode = nodes.find((n) => {
       return n.id === startingNode.id;
@@ -23,10 +23,10 @@ export default class Dijkstra {
       if (failsafe > 1000) break;
       failsafe += 1;
       // Collect Neighbors and filter
-      let consideredEdges = this._getNodesEdges(edges, currentNode);
+      let consideredEdges = this.#getNodesEdges(edges, currentNode);
       consideredEdges = consideredEdges.filter((e) => {
         if (!currentNode) throw Error("No Current Node");
-        const nonCurrentNode = this._getNonCurrentNodeFromEdge(nodes, e, currentNode);
+        const nonCurrentNode = this.#getNonCurrentNodeFromEdge(nodes, e, currentNode);
         if (unVisitedNodeIds.includes(nonCurrentNode.id)) {
           return e;
         }
@@ -34,13 +34,13 @@ export default class Dijkstra {
 
       // Update neighbors
       for (const edge of consideredEdges) {
-        const nonCurrentNode = this._getNonCurrentNodeFromEdge(
+        const nonCurrentNode = this.#getNonCurrentNodeFromEdge(
           nodes,
           edge,
           currentNode
         );
         if (nonCurrentNode.weight > currentNode.weight + edge.weight) {
-          nodes = this._setNodeData(
+          nodes = this.#setNodeData(
             nodes,
             nonCurrentNode,
             currentNode.weight + edge.weight,
@@ -49,17 +49,17 @@ export default class Dijkstra {
         }
       }
       // Mark node as visites
-      unVisitedNodeIds = this._setNodeVisited(unVisitedNodeIds, currentNode.id);
+      unVisitedNodeIds = this.#setNodeVisited(unVisitedNodeIds, currentNode.id);
       if (!unVisitedNodeIds.length) continue;
       // Pick new node from unVisited nodes
-      const pickedNode: Node = this._pickBestNode(nodes, unVisitedNodeIds);
+      const pickedNode: Node = this.#pickBestNode(nodes, unVisitedNodeIds);
       currentNode = pickedNode;
     }
 
     return { edges: edges, nodes: nodes };
   }
 
-  _pickBestNode(nodes: Node[], currentVisitedIds: number[]): Node {
+  #pickBestNode(nodes: Node[], currentVisitedIds: number[]): Node {
     // Greedily pick non-visited, lowest-weight node
     let nodesLeft = nodes.filter((n) => {
       return currentVisitedIds.includes(n.id);
@@ -69,7 +69,7 @@ export default class Dijkstra {
     });
   }
 
-  _setNodeData(nodes: Node[], node: Node, weight: number, prevNode: Node | undefined) {
+  #setNodeData(nodes: Node[], node: Node, weight: number, prevNode: Node | undefined) {
     return nodes.map((n) => {
       if (n.id === node.id) {
         return {
@@ -82,7 +82,7 @@ export default class Dijkstra {
     });
   }
 
-  _getNodesEdges(edges: Edge[], currentNode: Node): Edge[] {
+  #getNodesEdges(edges: Edge[], currentNode: Node): Edge[] {
     return edges.filter((e) => {
       if (
         e.firstNode.id === currentNode.id ||
@@ -93,13 +93,13 @@ export default class Dijkstra {
     });
   }
 
-  _setNodeVisited(unVisitedNodeIds: number[], nodeId: number) {
+  #setNodeVisited(unVisitedNodeIds: number[], nodeId: number) {
     return unVisitedNodeIds.filter((n) => {
       return n !== nodeId;
     });
   }
 
-  _getNonCurrentNodeFromEdge(nodes: Node[], edge: Edge, currentNode: Node): Node {
+  #getNonCurrentNodeFromEdge(nodes: Node[], edge: Edge, currentNode: Node): Node {
     // Find which node is not the current
     let nonCurrent: Node | undefined = edge.firstNode.id === currentNode.id
     ? edge.secondNode
