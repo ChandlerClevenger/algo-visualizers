@@ -10,12 +10,22 @@
 }
 
 .blink-line {
-  animation: blink 1s 4;
+  animation: blink-line 1s 3;
+}
+
+.blink-router {
+  animation: blink-png 1s 3;
 }
 
 /* Animations */
-@keyframes blink {
+@keyframes blink-line {
   100% {
     stroke: #f00;
+  }
+}
+
+@keyframes blink-png {
+  100% {
+    opacity: 0%;
   }
 }
