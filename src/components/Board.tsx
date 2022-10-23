@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { Edge, LinePos, Node, NodePos, RouterInt } from "../types/bin";
+import { Edge, LinePos, Node, NodePos } from "../types/bin";
 import Routers from "./Routers";
 import Lines from "./Lines";
 import Dijkstra from "../algs/Dijkstra";
 export default function Board() {
+  const Dijk = new Dijkstra();
   const [edges, setEdges] = useState<Edge[]>([]);
-  const [nodes, setNodes] = useState<Node[]>([{ id: 0, weight: Infinity, prevNode: undefined }]);
+  const [nodes, setNodes] = useState<Node[]>([
+    { id: 0, weight: Infinity, prevNode: undefined },
+  ]);
   const [linePositions, setLinePos] = useState<LinePos[]>([]);
   const [clickedNode, setClickedNode] = useState<Node | null>(null);
   const [rootNodeId, setRootNodeId] = useState<number>(0);
@@ -17,7 +20,7 @@ export default function Board() {
       {
         id: nodes.length,
         weight: Infinity,
-        prevNode: undefined
+        prevNode: undefined,
       },
     ]);
   }
@@ -148,7 +151,6 @@ export default function Board() {
           &nbsp;
           <button
             onClick={(e) => {
-              const Dijk = new Dijkstra();
               const rootNode = nodes.find((node) => {
                 return node.id === rootNodeId;
               });
@@ -160,6 +162,11 @@ export default function Board() {
           >
             RUN
           </button>
+          &nbsp; &nbsp;
+          <label htmlFor="animate">
+            Animate?&nbsp; &nbsp;
+            <input type="checkbox" name="animate" id="animate-check" />
+          </label>
         </p>
       </div>
     </>
