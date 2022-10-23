@@ -25,6 +25,10 @@ export default class Dijkstra {
     while (unVisitedNodeIds.length) {
       if (failsafe > 1000) break;
       failsafe += 1;
+      // Animate current Node
+      animationQ.add(
+        new Animation([`#router-img-${currentNode.id}`], "blink-router")
+      );
       // Collect Neighbors and filter
       let consideredEdges = this.#getNodesEdges(edges, currentNode);
       consideredEdges = consideredEdges.filter((e) => {
