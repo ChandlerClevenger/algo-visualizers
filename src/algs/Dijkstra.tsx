@@ -1,4 +1,7 @@
 import { Edge, Graph, Node } from "../types/bin";
+import { Animation, AnimationQueue } from "../utils/Animator";
+const animationQ = new AnimationQueue("animate-check");
+
 export default class Dijkstra {
   performDijkstra(edges: Edge[], nodes: Node[], startingNode: Node): Graph {
     let failsafe = 0;
@@ -26,12 +29,23 @@ export default class Dijkstra {
       let consideredEdges = this.#getNodesEdges(edges, currentNode);
       consideredEdges = consideredEdges.filter((e) => {
         if (!currentNode) throw Error("No Current Node");
-        const nonCurrentNode = this.#getNonCurrentNodeFromEdge(nodes, e, currentNode);
+        const nonCurrentNode = this.#getNonCurrentNodeFromEdge(
+          nodes,
+          e,
+          currentNode
+        );
         if (unVisitedNodeIds.includes(nonCurrentNode.id)) {
           return e;
         }
       });
-
+      animationQ.add(
+        new Animation(
+          consideredEdges.map((e) => {
+            return `#line-${e.id}`;
+          }),
+          "blink-line"
+        )
+      );
       // Update neighbors
       for (const edge of consideredEdges) {
         const nonCurrentNode = this.#getNonCurrentNodeFromEdge(
@@ -56,6 +70,7 @@ export default class Dijkstra {
       currentNode = pickedNode;
     }
 
+    animationQ.playAnimations();
     return { edges: edges, nodes: nodes };
   }
 
@@ -69,7 +84,12 @@ export default class Dijkstra {
     });
   }
 
-  #setNodeData(nodes: Node[], node: Node, weight: number, prevNode: Node | undefined) {
+  #setNodeData(
+    nodes: Node[],
+    node: Node,
+    weight: number,
+    prevNode: Node | undefined
+  ) {
     return nodes.map((n) => {
       if (n.id === node.id) {
         return {
@@ -99,14 +119,21 @@ export default class Dijkstra {
     });
   }
 
-  #getNonCurrentNodeFromEdge(nodes: Node[], edge: Edge, currentNode: Node): Node {
+  #getNonCurrentNodeFromEdge(
+    nodes: Node[],
+    edge: Edge,
+    currentNode: Node
+  ): Node {
     // Find which node is not the current
-    let nonCurrent: Node | undefined = edge.firstNode.id === currentNode.id
-    ? edge.secondNode
-    : edge.firstNode;
+    let nonCurrent: Node | undefined =
+      edge.firstNode.id === currentNode.id ? edge.secondNode : edge.firstNode;
     // Return the nonCurrent node from nodes as it has live values
-    nonCurrent = nodes.find((n) => {return nonCurrent && n.id === nonCurrent.id});
-    if (!nonCurrent) {throw Error(`Can not find currentNode`)}
+    nonCurrent = nodes.find((n) => {
+      return nonCurrent && n.id === nonCurrent.id;
+    });
+    if (!nonCurrent) {
+      throw Error(`Can not find currentNode`);
+    }
     return nonCurrent;
   }
 }
