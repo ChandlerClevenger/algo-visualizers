@@ -1,10 +1,10 @@
 export class Animation {
-  _animationName: string;
-  _selector: string;
+  private _animationName: string;
+  private _selector: string;
 
   constructor(selector: string | string[], animationName: string) {
     if (Array.isArray(selector)) {
-      this._selector = selector?.join(", ");
+      this._selector = selector.join(", ");
     } else {
       this._selector = selector;
     }
@@ -28,6 +28,31 @@ export class AnimationQueue {
     this._animationData = [];
     this._isPlaying = false;
     this._skipCheckId = skipCheckId;
+  }
+
+  async run(animationDatum: Animation) {
+    if (!this.#is_wanting_played() || animationDatum.selector === "") {
+      return;
+    }
+    // First, reset animations
+    document.querySelectorAll(animationDatum.animationName).forEach((el) => {
+      el.classList.remove(animationDatum.animationName);
+    });
+
+    const currentElements = document.querySelectorAll(animationDatum.selector);
+    currentElements.forEach((el) => {
+      el.classList.add(animationDatum.animationName);
+    });
+    console.log("Current elms", currentElements);
+    console.log(currentElements.item(0).getAnimations()[0]);
+    await currentElements
+      .item(0)
+      .getAnimations()[0]
+      .finished.then((res) => {
+        currentElements.forEach((el) => {
+          el.classList.remove(animationDatum.animationName);
+        });
+      });
   }
 
   add(animationDatum: Animation) {
