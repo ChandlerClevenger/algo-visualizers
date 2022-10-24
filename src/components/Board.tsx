@@ -13,6 +13,7 @@ export default function Board() {
   const [clickedNode, setClickedNode] = useState<Node | null>(null);
   const [rootNodeId, setRootNodeId] = useState<number>(0);
   const clickedNodePos = useRef<NodePos | null>(null);
+  const [isAnimated, setIsAnimated] = useState<boolean>(false);
 
   function addNewNode(): void {
     setNodes((oldNodes) => [
@@ -127,6 +128,20 @@ export default function Board() {
     );
   }
 
+  function onChangeRouterWeight(routerId: number, newWeight: number) {
+    setNodes((oldNodes) =>
+      oldNodes.map((node) => {
+        if (node.id === routerId) {
+          return {
+            ...node,
+            weight: newWeight,
+          };
+        }
+        return node;
+      })
+    );
+  }
+
   useEffect(() => {
     console.log("rendering ", linePositions);
   });
@@ -155,9 +170,21 @@ export default function Board() {
                 return node.id === rootNodeId;
               });
               if (!rootNode) return;
-              const res = Dijk.performDijkstra(edges, nodes, rootNode);
-              setNodes(res.nodes);
-              console.log(res);
+              if (isAnimated) {
+                Dijk.animatedPerformDijkstra(
+                  edges,
+                  nodes,
+                  rootNode,
+                  onChangeRouterWeight
+                ).then((res) => {
+                  setNodes(res.nodes);
+                  console.log(res);
+                });
+              } else {
+                const res = Dijk.performDijkstra(edges, nodes, rootNode);
+                setNodes(res.nodes);
+                console.log(res);
+              }
             }}
           >
             RUN
@@ -165,7 +192,14 @@ export default function Board() {
           &nbsp; &nbsp;
           <label htmlFor="animate">
             Animate?&nbsp; &nbsp;
-            <input type="checkbox" name="animate" id="animate-check" />
+            <input
+              type="checkbox"
+              name="animate"
+              id="animate-check"
+              onChange={(e) => {
+                setIsAnimated(e.target.checked);
+              }}
+            />
           </label>
         </p>
       </div>
