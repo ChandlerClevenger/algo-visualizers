@@ -1,14 +1,20 @@
 export class Animation {
   private _animationName: string;
   private _selector: string;
+  private _persistent: boolean;
 
-  constructor(selector: string | string[], animationName: string) {
+  constructor(
+    selector: string | string[],
+    animationName: string,
+    persistent = false
+  ) {
     if (Array.isArray(selector)) {
       this._selector = selector.join(", ");
     } else {
       this._selector = selector;
     }
     this._animationName = animationName;
+    this._persistent = persistent;
   }
   get selector() {
     return this._selector;
@@ -17,42 +23,49 @@ export class Animation {
   get animationName() {
     return this._animationName;
   }
+
+  get isPersistent() {
+    return this._persistent;
+  }
 }
 
 export class AnimationQueue {
   private _animationData: Animation[];
   private _isPlaying: boolean;
   private _skipCheckId: string;
+  private _promises: Promise<globalThis.Animation>[];
+  private _persistentAnimations: Animation[];
 
   constructor(skipCheckId: string) {
     this._animationData = [];
     this._isPlaying = false;
     this._skipCheckId = skipCheckId;
+    this._promises = [];
+    this._persistentAnimations = [];
   }
 
   async run(animationDatum: Animation) {
+    if (this._promises.length !== 0) {
+      await Promise.all(this._promises);
+    }
     if (!this.#is_wanting_played() || animationDatum.selector === "") {
       return;
     }
-    // First, reset animations
-    document.querySelectorAll(animationDatum.animationName).forEach((el) => {
-      el.classList.remove(animationDatum.animationName);
-    });
-
+    if (animationDatum.isPersistent) {
+      this._persistentAnimations.push(animationDatum);
+    }
     const currentElements = document.querySelectorAll(animationDatum.selector);
     currentElements.forEach((el) => {
       el.classList.add(animationDatum.animationName);
+      this._promises.push(...el.getAnimations().map((e) => e.finished));
     });
-    console.log("Current elms", currentElements);
-    console.log(currentElements.item(0).getAnimations()[0]);
-    await currentElements
-      .item(0)
-      .getAnimations()[0]
-      .finished.then((res) => {
-        currentElements.forEach((el) => {
-          el.classList.remove(animationDatum.animationName);
-        });
-      });
+
+    await Promise.all(this._promises);
+    currentElements.forEach((el) => {
+      if (animationDatum.isPersistent) return;
+      el.classList.remove(animationDatum.animationName);
+    });
+    this._promises = [];
   }
 
   add(animationDatum: Animation) {
@@ -103,5 +116,15 @@ export class AnimationQueue {
     ) as HTMLInputElement | null;
 
     return !!skipCheckBox?.checked;
+  }
+
+  cleanupPeristentAnimations() {
+    for (const animation of this._persistentAnimations) {
+      const persistentSet = document.querySelectorAll(animation.selector);
+      persistentSet.forEach((el) => {
+        el.classList.remove(animation.animationName);
+      });
+    }
+    this._persistentAnimations = [];
   }
 }
