@@ -15,6 +15,18 @@ export default class Dijkstra {
         return n.id;
       }),
     ];
+    let lastNodeInUnVisited = unVisitedNodeIds.pop();
+    if (!lastNodeInUnVisited) {
+      return;
+    }
+    // Remove animations that persist
+    animationQ.cleanupPeristentAnimations();
+    // Set last node to visited as it is not in play
+    // This is an artifact of how we consider nodes
+    unVisitedNodeIds = this.#setNodeVisited(
+      unVisitedNodeIds,
+      lastNodeInUnVisited
+    );
     // Set startingNode distance to 0 and mark as visited
     nodes = this.#setNodeData(nodes, startingNode, 0, startingNode);
     // Assume Inf distance of all nonStartingNodes and reset prevNodes
@@ -32,7 +44,11 @@ export default class Dijkstra {
       failsafe += 1;
       // Animate current Node
       await animationQ.run(
-        new Animation([`#router-img-${currentNode.id}`], "blink-router")
+        new Animation(
+          `#router-img-${currentNode.id}`,
+          "blink-router-considered",
+          true
+        )
       );
       // Collect Neighbors and filter
       let consideredEdges = this.#getNodesEdges(edges, currentNode);
@@ -58,7 +74,7 @@ export default class Dijkstra {
         )
       );
 
-      //let changedWeightNodes = [];
+      let changedWeightNodes = [];
       // Update neighbors
       for (const edge of consideredEdges) {
         const nonCurrentNode = this.#getNonCurrentNodeFromEdge(
@@ -68,7 +84,7 @@ export default class Dijkstra {
         );
         const newWeight = currentNode.weight + edge.weight;
         if (nonCurrentNode.weight > newWeight) {
-          //changedWeightNodes.push(nonCurrentNode);
+          changedWeightNodes.push(nonCurrentNode);
           onChangeRouterWeight(nonCurrentNode.id, newWeight);
           nodes = this.#setNodeData(
             nodes,
@@ -79,15 +95,16 @@ export default class Dijkstra {
         }
       }
 
-      // await animationQ.run(
-      //   new Animation(
-      //     changedWeightNodes.map((node) => {
-      //       return `#router-img-${node.id}`;
-      //     }),
-      //     "blink-router"
-      //   )
-      // );
-      // changedWeightNodes = [];
+      console.log("Changed weight nodes", changedWeightNodes);
+
+      await animationQ.run(
+        new Animation(
+          changedWeightNodes.map((e) => {
+            return `#router-img-${e.id}`;
+          }),
+          "blink-router"
+        )
+      );
 
       // Mark node as visites
       unVisitedNodeIds = this.#setNodeVisited(unVisitedNodeIds, currentNode.id);
@@ -215,6 +232,7 @@ export default class Dijkstra {
   }
 
   #setNodeVisited(unVisitedNodeIds: number[], nodeId: number) {
+    if (isNaN(nodeId)) throw TypeError("nodeId is of type number");
     return unVisitedNodeIds.filter((n) => {
       return n !== nodeId;
     });
