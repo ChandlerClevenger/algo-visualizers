@@ -10,11 +10,15 @@
 }
 
 .blink-line {
-  animation: blink-line 1s 3;
+  animation: blink-line 2s 1;
+}
+
+.blink-router-considered {
+  animation: blink-png-considered 2s forwards;
 }
 
 .blink-router {
-  animation: blink-png 1s 3;
+  animation: blink-png 1s 2;
 }
 
 /* Animations */
@@ -27,5 +31,15 @@
 @keyframes blink-png {
   100% {
     opacity: 0%;
+  }
+}
+
+@keyframes blink-png-considered {
+  50% {
+    opacity: 0%;
+  }
+  100% {
+    opacity: 100%;
+    filter: hue-rotate(180deg);
   }
 }
