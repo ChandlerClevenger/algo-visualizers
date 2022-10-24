@@ -26,6 +26,7 @@ export default function Router({
       allowAnyClick={true}
       onStart={onStart}
       onStop={onStop}
+      onMouseDown={onStop}
       onDrag={onDrag}
       bounds="#board"
       defaultPosition={{ x: 0, y: 0 }}
