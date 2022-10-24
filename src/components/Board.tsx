@@ -177,6 +177,7 @@ export default function Board() {
                   rootNode,
                   onChangeRouterWeight
                 ).then((res) => {
+                  if (!res) return;
                   setNodes(res.nodes);
                   console.log(res);
                 });
