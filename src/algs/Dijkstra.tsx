@@ -121,40 +121,15 @@ export default class Dijkstra {
           edgesTaken.push(edge);
           n = n.prevNode;
         } while (n);
-        console.log(edges);
-        // await animationQ.run(
-        //   new Animation(
-        //     edgesTaken.map((e) => {
-        //       return `#line-${e?.id}`;
-        //     }),
-        //     "green-blink"
-        //   )
-        // );
-        const r = document.querySelectorAll(
-          edgesTaken
-            .map((e) => {
-              return "#line-" + e?.id;
-            })
-            .join(",")
+
+        await animationQ.run(
+          new Animation(
+            edgesTaken.map((e) => {
+              return `#line-${e?.id}`;
+            }),
+            "green-blink"
+          )
         );
-        console.log("selected greens ", r);
-        let promises: Promise<globalThis.Animation>[] = [];
-        r.forEach((n) => {
-          n.classList.add("green-blink");
-          n.getAnimations().map((v) => promises.push(v.finished));
-        });
-
-        await new Promise((res, rej) => {
-          setTimeout(() => {
-            res(1);
-          }, 2000);
-        });
-
-        console.log(promises);
-
-        for (const n of r) {
-          n.classList.remove("green-blink");
-        }
       }
 
       // Mark node as visites
