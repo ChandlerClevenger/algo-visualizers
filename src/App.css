@@ -13,6 +13,10 @@
   animation: blink-line 2s 1;
 }
 
+.green-blink {
+  animation: blink-line-green 2s 2 forwards;
+}
+
 .blink-router-considered {
   animation: blink-png-considered 2s forwards;
 }
@@ -28,6 +32,12 @@
   }
 }
 
+@keyframes blink-line-green {
+  50% {
+    stroke: #0f0;
+  }
+}
+
 @keyframes blink-png {
   100% {
     opacity: 0%;
@@ -40,6 +50,6 @@
   }
   100% {
     opacity: 100%;
-    filter: hue-rotate(180deg);
+    filter: sepia(70%) hue-rotate(-90deg);
   }
 }

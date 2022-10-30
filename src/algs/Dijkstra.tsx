@@ -28,7 +28,8 @@ export default class Dijkstra {
       lastNodeInUnVisited
     );
     // Set startingNode distance to 0 and mark as visited
-    nodes = this.#setNodeData(nodes, startingNode, 0, startingNode);
+    nodes = this.#setNodeData(nodes, startingNode, 0, undefined);
+    onChangeRouterWeight(startingNode.id, 0);
     // Assume Inf distance of all nonStartingNodes and reset prevNodes
     for (const node of nodes) {
       if (node.id === startingNode.id) continue;
@@ -84,7 +85,6 @@ export default class Dijkstra {
         );
         const newWeight = currentNode.weight + edge.weight;
         if (nonCurrentNode.weight > newWeight) {
-          changedWeightNodes.push(nonCurrentNode);
           onChangeRouterWeight(nonCurrentNode.id, newWeight);
           nodes = this.#setNodeData(
             nodes,
@@ -92,19 +92,70 @@ export default class Dijkstra {
             newWeight,
             currentNode
           );
+          changedWeightNodes.push(
+            nodes.find((n) => n.id === nonCurrentNode.id)
+          );
         }
       }
-
-      console.log("Changed weight nodes", changedWeightNodes);
 
       await animationQ.run(
         new Animation(
           changedWeightNodes.map((e) => {
+            if (!e) return "";
             return `#router-img-${e.id}`;
           }),
           "blink-router"
         )
       );
+      for (const currNode of changedWeightNodes) {
+        let n: Node | undefined = currNode;
+        if (n === undefined) continue;
+        let edgesTaken = [];
+        do {
+          const edge = this.#getNodesEdges(edges, n).find((e) => {
+            if (n?.prevNode == undefined) return;
+            return (
+              [e.firstNode.id, e.secondNode.id].includes(n?.prevNode?.id) ?? e
+            );
+          });
+          edgesTaken.push(edge);
+          n = n.prevNode;
+        } while (n);
+        console.log(edges);
+        // await animationQ.run(
+        //   new Animation(
+        //     edgesTaken.map((e) => {
+        //       return `#line-${e?.id}`;
+        //     }),
+        //     "green-blink"
+        //   )
+        // );
+        const r = document.querySelectorAll(
+          edgesTaken
+            .map((e) => {
+              return "#line-" + e?.id;
+            })
+            .join(",")
+        );
+        console.log("selected greens ", r);
+        let promises: Promise<globalThis.Animation>[] = [];
+        r.forEach((n) => {
+          n.classList.add("green-blink");
+          n.getAnimations().map((v) => promises.push(v.finished));
+        });
+
+        await new Promise((res, rej) => {
+          setTimeout(() => {
+            res(1);
+          }, 2000);
+        });
+
+        console.log(promises);
+
+        for (const n of r) {
+          n.classList.remove("green-blink");
+        }
+      }
 
       // Mark node as visites
       unVisitedNodeIds = this.#setNodeVisited(unVisitedNodeIds, currentNode.id);
