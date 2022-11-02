@@ -1,33 +1,4 @@
-export class Animation {
-  private _animationName: string;
-  private _selector: string;
-  private _persistent: boolean;
-
-  constructor(
-    selector: string | string[],
-    animationName: string,
-    persistent = false
-  ) {
-    if (Array.isArray(selector)) {
-      this._selector = selector.join(", ");
-    } else {
-      this._selector = selector;
-    }
-    this._animationName = animationName;
-    this._persistent = persistent;
-  }
-  get selector() {
-    return this._selector;
-  }
-
-  get animationName() {
-    return this._animationName;
-  }
-
-  get isPersistent() {
-    return this._persistent;
-  }
-}
+import Animation from "./Animation";
 
 export class AnimationQueue {
   private _animationData: Animation[];
@@ -45,9 +16,6 @@ export class AnimationQueue {
   }
 
   async run(animationDatum: Animation) {
-    if (this._promises.length !== 0) {
-      await Promise.all(this._promises);
-    }
     if (!this.#is_wanting_played() || animationDatum.selector === "") {
       return;
     }
@@ -55,16 +23,20 @@ export class AnimationQueue {
       this._persistentAnimations.push(animationDatum);
     }
     const currentElements = document.querySelectorAll(animationDatum.selector);
+    console.log(currentElements);
     currentElements.forEach((el) => {
-      el.classList.add(animationDatum.animationName);
+      console.log(animationDatum.animation, animationDatum.options);
+      el.animate(animationDatum.animation, animationDatum.options);
       this._promises.push(...el.getAnimations().map((e) => e.finished));
     });
 
-    await Promise.all(this._promises);
-    currentElements.forEach((el) => {
-      if (animationDatum.isPersistent) return;
-      el.classList.remove(animationDatum.animationName);
-    });
+    // await new Promise((res, rej) => {
+    //   setTimeout(() => {
+    //     res(1);
+    //   }, animationDatum.options.duration);
+    // });
+    await Promise.allSettled(this._promises);
+
     this._promises = [];
   }
 
@@ -94,17 +66,7 @@ export class AnimationQueue {
 
     for (const animation of this._animationData) {
       // Check for cancle animation
-      if (!this.#is_wanting_played()) {
-        break;
-      }
-      const currentElements = document.querySelectorAll(animation.selector);
-      currentElements.forEach((el) => {
-        el.classList.add(animation.animationName);
-      });
-      await currentElements.item(0).getAnimations()[0].finished;
-      currentElements.forEach((el) => {
-        el.classList.remove(animation.animationName);
-      });
+      await this.run(animation);
     }
     this.#clear();
     this._isPlaying = false;
@@ -121,9 +83,9 @@ export class AnimationQueue {
   cleanupPeristentAnimations() {
     for (const animation of this._persistentAnimations) {
       const persistentSet = document.querySelectorAll(animation.selector);
-      persistentSet.forEach((el) => {
-        el.classList.remove(animation.animationName);
-      });
+      // persistentSet.forEach((el) => {
+      //   el.classList.remove(animation.animationName);
+      // });
     }
     this._persistentAnimations = [];
   }

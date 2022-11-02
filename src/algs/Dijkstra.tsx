@@ -1,5 +1,6 @@
 import { Edge, Graph, Node } from "../types/bin";
-import { Animation, AnimationQueue } from "../utils/Animator";
+import { AnimationQueue } from "../utils/Animator";
+import * as animations from "../utils/Animations";
 const animationQ = new AnimationQueue("animate-check");
 
 export default class Dijkstra {
@@ -45,11 +46,7 @@ export default class Dijkstra {
       failsafe += 1;
       // Animate current Node
       await animationQ.run(
-        new Animation(
-          `#router-img-${currentNode.id}`,
-          "blink-router-considered",
-          true
-        )
+        animations.animateRouterConsidered(`#router-img-${currentNode.id}`)
       );
       // Collect Neighbors and filter
       let consideredEdges = this.#getNodesEdges(edges, currentNode);
@@ -67,11 +64,10 @@ export default class Dijkstra {
 
       // Animate the currently considered edges
       await animationQ.run(
-        new Animation(
+        animations.animateLineBlinkRed(
           consideredEdges.map((e) => {
             return `#line-${e.id}`;
-          }),
-          "blink-line"
+          })
         )
       );
 
@@ -99,12 +95,11 @@ export default class Dijkstra {
       }
 
       await animationQ.run(
-        new Animation(
+        animations.animateRouterBlink(
           changedWeightNodes.map((e) => {
             if (!e) return "";
             return `#router-img-${e.id}`;
-          }),
-          "blink-router"
+          })
         )
       );
       for (const currNode of changedWeightNodes) {
@@ -122,12 +117,12 @@ export default class Dijkstra {
           n = n.prevNode;
         } while (n);
 
+        console.log(edgesTaken);
         await animationQ.run(
-          new Animation(
+          animations.animateLineBlinkGreen(
             edgesTaken.map((e) => {
               return `#line-${e?.id}`;
-            }),
-            "green-blink"
+            })
           )
         );
       }
@@ -165,10 +160,7 @@ export default class Dijkstra {
     while (unVisitedNodeIds.length) {
       if (failsafe > 1000) break;
       failsafe += 1;
-      // Animate current Node
-      animationQ.add(
-        new Animation([`#router-img-${currentNode.id}`], "blink-router")
-      );
+
       // Collect Neighbors and filter
       let consideredEdges = this.#getNodesEdges(edges, currentNode);
       consideredEdges = consideredEdges.filter((e) => {
@@ -182,14 +174,7 @@ export default class Dijkstra {
           return e;
         }
       });
-      animationQ.add(
-        new Animation(
-          consideredEdges.map((e) => {
-            return `#line-${e.id}`;
-          }),
-          "blink-line"
-        )
-      );
+
       // Update neighbors
       for (const edge of consideredEdges) {
         const nonCurrentNode = this.#getNonCurrentNodeFromEdge(
@@ -214,7 +199,6 @@ export default class Dijkstra {
       currentNode = pickedNode;
     }
 
-    animationQ.playAnimations();
     return { edges: edges, nodes: nodes };
   }
 
