@@ -1,6 +1,6 @@
 import { Edge, Graph, Node } from "../types/bin";
 import { AnimationQueue } from "../utils/Animator";
-import * as animations from "../utils/Animations";
+import * as animations from "../utils/DijkstraAnimations";
 const animationQ = new AnimationQueue("animate-check");
 
 export default class Dijkstra {
