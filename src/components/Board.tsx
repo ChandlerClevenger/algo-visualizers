@@ -148,7 +148,16 @@ export default function Board() {
 
   return (
     <>
-      <div id="board" className="w-100 h-100 bg-secondary position-relative">
+      <div
+        id="board"
+        className="w-100 h-100 bg-secondary position-relative"
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          e.bubbles = false;
+          return false;
+        }}
+      >
         <Lines
           linePositions={linePositions}
           onWeightChange={receiveWeightChange}
