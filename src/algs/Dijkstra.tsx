@@ -10,6 +10,9 @@ export default class Dijkstra {
     startingNode: Node,
     onChangeRouterWeight: (routerId: number, newWeight: number) => void
   ) {
+    if (animationQ.isPlaying) {
+      throw Error("Animation is already playing!");
+    }
     let failsafe = 0;
     let unVisitedNodeIds: number[] = [
       ...nodes.map((n) => {

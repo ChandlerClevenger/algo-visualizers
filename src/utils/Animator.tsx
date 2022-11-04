@@ -15,10 +15,19 @@ export class AnimationQueue {
     this._persistentAnimations = [];
   }
 
+  get isPlaying() {
+    return this._isPlaying;
+  }
+
   async run(animationDatum: Animation) {
-    if (!this.#is_wanting_played() || animationDatum.selector === "") {
+    if (
+      !this.#is_wanting_played() ||
+      animationDatum.selector === "" ||
+      this._isPlaying
+    ) {
       return;
     }
+    this._isPlaying = true;
 
     const currentElements = document.querySelectorAll(animationDatum.selector);
     currentElements.forEach((el) => {
@@ -26,11 +35,10 @@ export class AnimationQueue {
       if (animationDatum.options?.fill == "forwards") {
         this._persistentAnimations.push(anim);
       }
-      this._promises.push(...el.getAnimations().map((e) => e.finished));
+      this._promises.push(anim.finished);
     });
-
     await Promise.allSettled(this._promises);
-
+    this._isPlaying = false;
     this._promises = [];
   }
 
