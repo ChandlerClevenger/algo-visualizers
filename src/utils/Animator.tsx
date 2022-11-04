@@ -5,7 +5,7 @@ export class AnimationQueue {
   private _isPlaying: boolean;
   private _skipCheckId: string;
   private _promises: Promise<globalThis.Animation>[];
-  private _persistentAnimations: Animation[];
+  private _persistentAnimations: globalThis.Animation[];
 
   constructor(skipCheckId: string) {
     this._animationData = [];
@@ -19,22 +19,16 @@ export class AnimationQueue {
     if (!this.#is_wanting_played() || animationDatum.selector === "") {
       return;
     }
-    if (animationDatum.isPersistent) {
-      this._persistentAnimations.push(animationDatum);
-    }
+
     const currentElements = document.querySelectorAll(animationDatum.selector);
-    console.log(currentElements);
     currentElements.forEach((el) => {
-      console.log(animationDatum.animation, animationDatum.options);
-      el.animate(animationDatum.animation, animationDatum.options);
+      const anim = el.animate(animationDatum.animation, animationDatum.options);
+      if (animationDatum.options?.fill == "forwards") {
+        this._persistentAnimations.push(anim);
+      }
       this._promises.push(...el.getAnimations().map((e) => e.finished));
     });
 
-    // await new Promise((res, rej) => {
-    //   setTimeout(() => {
-    //     res(1);
-    //   }, animationDatum.options.duration);
-    // });
     await Promise.allSettled(this._promises);
 
     this._promises = [];
@@ -82,10 +76,7 @@ export class AnimationQueue {
 
   cleanupPeristentAnimations() {
     for (const animation of this._persistentAnimations) {
-      const persistentSet = document.querySelectorAll(animation.selector);
-      // persistentSet.forEach((el) => {
-      //   el.classList.remove(animation.animationName);
-      // });
+      animation.cancel();
     }
     this._persistentAnimations = [];
   }
