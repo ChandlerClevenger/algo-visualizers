@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { DraggableData } from "react-draggable";
-import { RouterInt, Node } from "../types/bin";
+import { Node, IRouterDropdown } from "../types/bin";
 import Router from "./DraggableRouter";
+import RouterDropdown from "./RouterDropdown";
 const ROUTER_SIZE = 75;
 const CENTER_OFFSET = ROUTER_SIZE / 2;
 
@@ -13,6 +14,7 @@ export default function Routers({
   onSendRootId,
 }: any) {
   let currentDraggedRef = useRef({ x: 0, y: 0 });
+  let [rClickData, setRClickData] = useState<IRouterDropdown | null>(null);
 
   function stop(e: MouseEvent, info: DraggableData) {
     const DRAGGED_ID = Number(info.node.id);
@@ -26,7 +28,7 @@ export default function Routers({
           handleLeftClick(info);
           break;
         case 2:
-          handleRightClick(DRAGGED_ID);
+          handleRightClick(e, DRAGGED_ID);
           break;
         default:
           break;
@@ -55,8 +57,15 @@ export default function Routers({
     return parseInt(uid.replace("-", ""), 16);
   }
 
-  function handleRightClick(rootId: number) {
-    onSendRootId(rootId);
+  function handleRightClick(event: MouseEvent, nodeId: number) {
+    setRClickData({
+      event: event,
+      nodeId: nodeId,
+      onCloseDropdown: () => {
+        setRClickData(null);
+      },
+    });
+    onSendRootId(nodeId);
   }
 
   function handleLeftClick(info: DraggableData) {
@@ -73,18 +82,23 @@ export default function Routers({
   }
   return (
     <>
-      {nodes.map((router: Node, index: number) => (
-        <Router
-          key={index}
-          id={router.id}
-          onStart={start}
-          onStop={stop}
-          onDrag={drag}
-          size={75}
-          prevNode={router.prevNode}
-          weight={router.weight}
-        ></Router>
-      ))}
+      <>
+        {nodes.map((router: Node, index: number) => (
+          <Router
+            key={index}
+            id={router.id}
+            onStart={start}
+            onStop={stop}
+            onDrag={drag}
+            size={75}
+            prevNode={router.prevNode}
+            weight={router.weight}
+          ></Router>
+        ))}
+      </>
+      <>
+        {rClickData ? <RouterDropdown {...rClickData}></RouterDropdown> : null}
+      </>
     </>
   );
 }

@@ -47,3 +47,9 @@ export interface BoardData {
   clickedRouterId: number;
   rootRouterId: number;
 }
+
+export interface IRouterDropdown {
+  event: MouseEvent;
+  nodeId: number;
+  onCloseDropdown(): void;
+}
