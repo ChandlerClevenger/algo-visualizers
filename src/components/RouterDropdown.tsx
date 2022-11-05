@@ -4,8 +4,11 @@ export default function RouterDropdown({
   event,
   nodeId,
   onCloseDropdown,
+  onChangeRootRouter,
+  onDeleteRouter,
 }: IRouterDropdown) {
-  const width = 200;
+  const WIDTH = 125;
+
   function handleMouseMove(e: MouseEvent) {
     const isOverDropdown = (e.target as HTMLElement).classList.contains(
       "list-group-item"
@@ -25,23 +28,35 @@ export default function RouterDropdown({
   return (
     <>
       <div
+        id="router-dropdown"
         className="position-absolute"
         style={{
           background: "white",
           top: event.clientY + "px",
-          left: event.clientX - width / 2 + "px",
-          width: width + "px",
+          left: event.clientX - WIDTH / 2 + "px",
+          width: WIDTH + "px",
         }}
       >
         <div className="list-group">
           <a
+            onClick={() => {
+              onChangeRootRouter(nodeId);
+              onCloseDropdown();
+            }}
             href="#"
-            className="list-group-item list-group-item-action text-center"
+            className="list-group-item list-group-item-action"
           >
-            {nodeId}
+            make root
           </a>
-          <a href="#" className="list-group-item list-group-item-action">
-            Cras justo odio
+          <a
+            onClick={() => {
+              //onDeleteRouter(nodeId);
+              onCloseDropdown();
+            }}
+            href="#"
+            className="list-group-item list-group-item-action"
+          >
+            delete router
           </a>
         </div>
       </div>

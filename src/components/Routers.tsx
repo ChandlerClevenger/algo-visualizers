@@ -12,9 +12,10 @@ export default function Routers({
   onSendClickedRouterData,
   onSendRouterPos,
   onSendRootId,
+  onSendDeleteRouter,
 }: any) {
   let currentDraggedRef = useRef({ x: 0, y: 0 });
-  let [rClickData, setRClickData] = useState<IRouterDropdown | null>(null);
+  let [dropdownData, setDropdownData] = useState<IRouterDropdown | null>(null);
 
   function stop(e: MouseEvent, info: DraggableData) {
     const DRAGGED_ID = Number(info.node.id);
@@ -58,14 +59,19 @@ export default function Routers({
   }
 
   function handleRightClick(event: MouseEvent, nodeId: number) {
-    setRClickData({
+    setDropdownData({
       event: event,
       nodeId: nodeId,
       onCloseDropdown: () => {
-        setRClickData(null);
+        setDropdownData(null);
+      },
+      onChangeRootRouter: (routerId) => {
+        onSendRootId(routerId);
+      },
+      onDeleteRouter: (routerId) => {
+        onSendDeleteRouter(routerId);
       },
     });
-    onSendRootId(nodeId);
   }
 
   function handleLeftClick(info: DraggableData) {
@@ -97,7 +103,9 @@ export default function Routers({
         ))}
       </>
       <>
-        {rClickData ? <RouterDropdown {...rClickData}></RouterDropdown> : null}
+        {dropdownData ? (
+          <RouterDropdown {...dropdownData}></RouterDropdown>
+        ) : null}
       </>
     </>
   );
