@@ -21,7 +21,7 @@ export default function Lines({ linePositions, onWeightChange }: any) {
     <svg id="lines" className="position-absolute w-100 h-100">
       {linePositions.map((linePos: LineData, index: number) => (
         <Line
-          key={index}
+          key={linePos.id}
           id={linePos.id}
           clicked={clicked}
           firstConnector={linePos.firstConnector}

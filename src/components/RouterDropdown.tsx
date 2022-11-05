@@ -48,6 +48,16 @@ export default function RouterDropdown({
           >
             make root
           </a>
+          <a
+            onClick={() => {
+              onDeleteRouter(nodeId);
+              onCloseDropdown();
+            }}
+            href="#"
+            className="list-group-item list-group-item-action"
+          >
+            delete router
+          </a>
         </div>
       </div>
     </>

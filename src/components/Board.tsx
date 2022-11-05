@@ -3,20 +3,19 @@ import { Edge, LinePos, Node, NodePos } from "../types/bin";
 import Routers from "./Routers";
 import Lines from "./Lines";
 import Dijkstra from "../algs/Dijkstra";
+let routerIds = 0;
+let edgesIds = 0;
 export default function Board() {
   const Dijk = new Dijkstra();
   const [edges, setEdges] = useState<Edge[]>([]);
-  const [nodeIdGenerator, setNodeIdGenerator] = useState<number>(0);
   const [nodes, setNodes] = useState<Node[]>([
     {
-      id: nodeIdGenerator,
+      id: routerIds,
       weight: Infinity,
       prevNode: undefined,
     },
   ]);
-  useEffect(() => {
-    setNodeIdGenerator((old) => (old += 1));
-  }, [nodes]);
+
   const [linePositions, setLinePos] = useState<LinePos[]>([]);
   const [clickedNode, setClickedNode] = useState<Node | null>(null);
   const [rootNodeId, setRootNodeId] = useState<number>(0);
@@ -27,7 +26,7 @@ export default function Board() {
     setNodes((oldNodes) => [
       ...oldNodes,
       {
-        id: nodeIdGenerator,
+        id: ++routerIds,
         weight: Infinity,
         prevNode: undefined,
       },
@@ -52,7 +51,7 @@ export default function Board() {
     setEdges((oldEdges) => [
       ...oldEdges,
       {
-        id: edges.length,
+        id: ++edgesIds,
         firstNode: node,
         secondNode: clickedNode,
         weight: 0,
@@ -62,7 +61,7 @@ export default function Board() {
     setLinePos((oldLinePos) => [
       ...oldLinePos,
       {
-        id: edges.length,
+        id: edgesIds,
         firstConnector: firstConnector,
         secondConnector: nodePos,
         weight: 0,
@@ -159,13 +158,14 @@ export default function Board() {
     );
     setEdges((oldEdges) =>
       oldEdges.filter((edge) => {
-        console.log([edge.firstNode.id, edge.secondNode.id]);
-        return !(nodeId in [edge.firstNode.id, edge.secondNode.id]);
+        return !(nodeId === edge.firstNode.id || nodeId === edge.secondNode.id);
       })
     );
     setLinePos((old) =>
       old.filter((l) => {
-        return !(nodeId in [l.firstConnector.id, l.secondConnector.id]);
+        return !(
+          nodeId === l.firstConnector.id || nodeId === l.secondConnector.id
+        );
       })
     );
   }
