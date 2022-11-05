@@ -230,7 +230,10 @@ export default function Board() {
           </button>
           &nbsp; &nbsp;
           <label htmlFor="animate">
-            Animate?&nbsp; &nbsp;
+            {isAnimated
+              ? "Select to cancel animation"
+              : "Select to set animation on run"}
+            &nbsp; &nbsp;
             <input
               type="checkbox"
               name="animate"
