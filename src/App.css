@@ -8,3 +8,21 @@
 .router:active {
   cursor: grabbing;
 }
+
+#router-dropdown .list-group-item {
+  font-size: smaller;
+  color: white;
+  background-color: #444;
+  border-radius: none;
+}
+#router-dropdown .list-group-item:hover {
+  background-color: #555;
+}
+
+#router-dropdown {
+  border-radius: 15%;
+  background-color: #444;
+}
+
+#router-dropdown:active {
+}
