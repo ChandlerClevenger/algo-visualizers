@@ -7,8 +7,13 @@ export default function Board() {
   const Dijk = new Dijkstra();
   const [edges, setEdges] = useState<Edge[]>([]);
   const [nodes, setNodes] = useState<Node[]>([
-    { id: 0, weight: Infinity, prevNode: undefined },
+    {
+      id: 0,
+      weight: Infinity,
+      prevNode: undefined,
+    },
   ]);
+
   const [linePositions, setLinePos] = useState<LinePos[]>([]);
   const [clickedNode, setClickedNode] = useState<Node | null>(null);
   const [rootNodeId, setRootNodeId] = useState<number>(0);
@@ -142,6 +147,21 @@ export default function Board() {
     );
   }
 
+  function receiveDeleteRouter(nodeId: number) {
+    console.log("Del id: ", nodeId);
+    setNodes((oldNodes) =>
+      oldNodes.filter((n) => {
+        return n.id !== nodeId;
+      })
+    );
+    setEdges((oldEdges) =>
+      oldEdges.filter((edge) => {
+        console.log([edge.firstNode.id, edge.secondNode.id]);
+        return !(nodeId in [edge.firstNode.id, edge.secondNode.id]);
+      })
+    );
+  }
+
   useEffect(() => {
     console.log("rendering ", linePositions);
   });
@@ -168,6 +188,7 @@ export default function Board() {
           onAddNewRouter={addNewNode}
           onSendClickedRouterData={receiveClickedNodeData}
           onSendRootId={receiveRootNodeId}
+          onSendDeleteRouter={receiveDeleteRouter}
         ></Routers>
         <p className="position-absolute start-50 translate-middle-x">
           Currently Clicked: {clickedNode?.id ?? "None"}
