@@ -6,14 +6,17 @@ import Dijkstra from "../algs/Dijkstra";
 export default function Board() {
   const Dijk = new Dijkstra();
   const [edges, setEdges] = useState<Edge[]>([]);
+  const [nodeIdGenerator, setNodeIdGenerator] = useState<number>(0);
   const [nodes, setNodes] = useState<Node[]>([
     {
-      id: 0,
+      id: nodeIdGenerator,
       weight: Infinity,
       prevNode: undefined,
     },
   ]);
-
+  useEffect(() => {
+    setNodeIdGenerator((old) => (old += 1));
+  }, [nodes]);
   const [linePositions, setLinePos] = useState<LinePos[]>([]);
   const [clickedNode, setClickedNode] = useState<Node | null>(null);
   const [rootNodeId, setRootNodeId] = useState<number>(0);
@@ -24,7 +27,7 @@ export default function Board() {
     setNodes((oldNodes) => [
       ...oldNodes,
       {
-        id: nodes.length,
+        id: nodeIdGenerator,
         weight: Infinity,
         prevNode: undefined,
       },
@@ -158,6 +161,11 @@ export default function Board() {
       oldEdges.filter((edge) => {
         console.log([edge.firstNode.id, edge.secondNode.id]);
         return !(nodeId in [edge.firstNode.id, edge.secondNode.id]);
+      })
+    );
+    setLinePos((old) =>
+      old.filter((l) => {
+        return !(nodeId in [l.firstConnector.id, l.secondConnector.id]);
       })
     );
   }

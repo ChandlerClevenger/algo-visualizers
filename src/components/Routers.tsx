@@ -16,7 +16,7 @@ export default function Routers({
 }: any) {
   let currentDraggedRef = useRef({ x: 0, y: 0 });
   let [dropdownData, setDropdownData] = useState<IRouterDropdown | null>(null);
-
+  let lastNode = nodes[nodes.length - 1];
   function stop(e: MouseEvent, info: DraggableData) {
     const DRAGGED_ID = Number(info.node.id);
     const { x, y } = { ...info };
@@ -36,7 +36,7 @@ export default function Routers({
       }
       return;
     }
-    if (DRAGGED_ID == nodes.length - 1) {
+    if (DRAGGED_ID == lastNode.id) {
       // Tell Board to make new node
       onAddNewRouter();
     }
@@ -91,7 +91,7 @@ export default function Routers({
       <>
         {nodes.map((router: Node, index: number) => (
           <Router
-            key={index}
+            key={router.id}
             id={router.id}
             onStart={start}
             onStop={stop}
