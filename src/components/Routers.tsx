@@ -54,10 +54,6 @@ export default function Routers({
     });
   }
 
-  function generateId(uid: string): number {
-    return parseInt(uid.replace("-", ""), 16);
-  }
-
   function handleRightClick(event: MouseEvent, nodeId: number) {
     setDropdownData({
       event: event,
