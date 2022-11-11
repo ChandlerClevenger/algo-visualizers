@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Edge, LinePos, Node, NodePos } from "../types/bin";
 import Routers from "./Routers";
 import Lines from "./Lines";
+import MenuBar from "./MenuBar";
+
 import Dijkstra from "../algs/Dijkstra";
+
 let routerIds = 0;
 let edgesIds = 0;
 export default function Board() {
@@ -170,6 +173,29 @@ export default function Board() {
     );
   }
 
+  function runAlgorithm(e: MouseEvent) {
+    const rootNode = nodes.find((node) => {
+      return node.id === rootNodeId;
+    });
+    if (!rootNode) return;
+    if (isAnimated) {
+      Dijk.animatedPerformDijkstra(
+        edges,
+        nodes,
+        rootNode,
+        onChangeRouterWeight
+      ).then((res) => {
+        if (!res) return;
+        setNodes(res.nodes);
+        console.log(res);
+      });
+    } else {
+      const res = Dijk.performDijkstra(edges, nodes, rootNode);
+      setNodes(res.nodes);
+      console.log(res);
+    }
+  }
+
   useEffect(() => {
     console.log("rendering ", linePositions);
   });
@@ -198,52 +224,16 @@ export default function Board() {
           onSendRootId={receiveRootNodeId}
           onSendDeleteRouter={receiveDeleteRouter}
         ></Routers>
-        <p className="position-absolute start-50 translate-middle-x">
-          Currently Clicked: {clickedNode?.id ?? "None"}
-          &nbsp; Root Node: {rootNodeId}
-          &nbsp;
-          <button
-            onClick={(e) => {
-              const rootNode = nodes.find((node) => {
-                return node.id === rootNodeId;
-              });
-              if (!rootNode) return;
-              if (isAnimated) {
-                Dijk.animatedPerformDijkstra(
-                  edges,
-                  nodes,
-                  rootNode,
-                  onChangeRouterWeight
-                ).then((res) => {
-                  if (!res) return;
-                  setNodes(res.nodes);
-                  console.log(res);
-                });
-              } else {
-                const res = Dijk.performDijkstra(edges, nodes, rootNode);
-                setNodes(res.nodes);
-                console.log(res);
-              }
-            }}
-          >
-            RUN
-          </button>
-          &nbsp; &nbsp;
-          <label htmlFor="animate">
-            {isAnimated
-              ? "Select to cancel animation"
-              : "Select to set animation on run"}
-            &nbsp; &nbsp;
-            <input
-              type="checkbox"
-              name="animate"
-              id="animate-check"
-              onChange={(e) => {
-                setIsAnimated(e.target.checked);
-              }}
-            />
-          </label>
-        </p>
+        <MenuBar
+          onRunAlgorithm={runAlgorithm}
+          rootNodeId={rootNodeId}
+          clickedNodeId={clickedNode?.id}
+          isAnimated={isAnimated}
+          onChangeIsAnimated={(e: MouseEvent) => {
+            const checkbox = e.target as HTMLInputElement;
+            setIsAnimated(checkbox.checked);
+          }}
+        ></MenuBar>
       </div>
     </>
   );
