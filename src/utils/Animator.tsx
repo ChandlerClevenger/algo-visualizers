@@ -25,6 +25,9 @@ export class AnimationQueue {
       animationDatum.selector === "" ||
       this._isPlaying
     ) {
+      if (!this.#is_wanting_played()) {
+        this.cleanupPeristentAnimations();
+      }
       return;
     }
     this._isPlaying = true;
