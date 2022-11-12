@@ -53,5 +53,10 @@ export interface IRouterDropdown {
   nodeId: number;
   onCloseDropdown(): void;
   onChangeRootRouter(routerId: number): void;
-  onDeleteRouter(routerIdL: number): void;
+}
+
+export interface IRouters {
+  onSendClickedRouterData(node: Node | undefined, { id, x, y }: NodePos): void;
+  onSendRouterPos({ id, x, y }: NodePos): void;
+  onSendRootId(routerId: number): void;
 }

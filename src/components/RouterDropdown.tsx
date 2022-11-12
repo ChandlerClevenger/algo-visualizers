@@ -1,14 +1,15 @@
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { IRouterDropdown } from "../types/bin";
+import { NodeContext } from "./Board";
 export default function RouterDropdown({
   event,
   nodeId,
   onCloseDropdown,
   onChangeRootRouter,
-  onDeleteRouter,
 }: IRouterDropdown) {
   const WIDTH = 125;
 
+  const { nodes, setNodes, deleteRouter } = useContext(NodeContext);
   function handleMouseMove(e: MouseEvent) {
     const isOverDropdown = (e.target as HTMLElement).classList.contains(
       "list-group-item"
@@ -50,7 +51,7 @@ export default function RouterDropdown({
           </a>
           <a
             onClick={() => {
-              onDeleteRouter(nodeId);
+              deleteRouter(nodeId);
               onCloseDropdown();
             }}
             href="#"

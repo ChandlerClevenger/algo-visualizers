@@ -1,19 +1,20 @@
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { DraggableData } from "react-draggable";
-import { Node, IRouterDropdown } from "../types/bin";
+import { Node, IRouterDropdown, IRouters } from "../types/bin";
+import { NodeContext } from "./Board";
 import Router from "./DraggableRouter";
 import RouterDropdown from "./RouterDropdown";
 const ROUTER_SIZE = 75;
 const CENTER_OFFSET = ROUTER_SIZE / 2;
+let nodeIds = 0;
 
 export default function Routers({
-  nodes,
-  onAddNewRouter,
   onSendClickedRouterData,
   onSendRouterPos,
   onSendRootId,
-  onSendDeleteRouter,
-}: any) {
+}: IRouters) {
+  const { nodes, setNodes } = useContext(NodeContext);
+
   let currentDraggedRef = useRef({ x: 0, y: 0 });
   let [dropdownData, setDropdownData] = useState<IRouterDropdown | null>(null);
   let lastNode = nodes[nodes.length - 1];
@@ -37,11 +38,13 @@ export default function Routers({
       return;
     }
     if (DRAGGED_ID == lastNode.id) {
-      // Tell Board to make new node
-      onAddNewRouter();
+      // Add new node
+      const newNode: Node = { id: ++nodeIds, weight: 0, prevNode: undefined };
+      setNodes((oldNodes) => {
+        return [...oldNodes, newNode];
+      });
     }
   }
-
   function start(e: MouseEvent, info: DraggableData) {
     currentDraggedRef.current = { x: info.x, y: info.y };
   }
@@ -64,9 +67,6 @@ export default function Routers({
       onChangeRootRouter: (routerId) => {
         onSendRootId(routerId);
       },
-      onDeleteRouter: (routerId) => {
-        onSendDeleteRouter(routerId);
-      },
     });
   }
 
@@ -84,25 +84,21 @@ export default function Routers({
   }
   return (
     <>
-      <>
-        {nodes.map((router: Node, index: number) => (
-          <Router
-            key={router.id}
-            id={router.id}
-            onStart={start}
-            onStop={stop}
-            onDrag={drag}
-            size={75}
-            prevNode={router.prevNode}
-            weight={router.weight}
-          ></Router>
-        ))}
-      </>
-      <>
-        {dropdownData ? (
-          <RouterDropdown {...dropdownData}></RouterDropdown>
-        ) : null}
-      </>
+      {nodes.map((router: Node, index: number) => (
+        <Router
+          key={router.id}
+          id={router.id}
+          onStart={start}
+          onStop={stop}
+          onDrag={drag}
+          size={75}
+          prevNode={router.prevNode}
+          weight={router.weight}
+        ></Router>
+      ))}
+      {dropdownData ? (
+        <RouterDropdown {...dropdownData}></RouterDropdown>
+      ) : null}
     </>
   );
 }

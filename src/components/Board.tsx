@@ -1,13 +1,35 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  createContext,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { Edge, LinePos, Node, NodePos } from "../types/bin";
 import Routers from "./Routers";
 import Lines from "./Lines";
 import MenuBar from "./MenuBar";
-
 import Dijkstra from "../algs/Dijkstra";
 
 let routerIds = 0;
 let edgesIds = 0;
+export const NodeContext = createContext<{
+  nodes: Node[];
+  setNodes: Dispatch<SetStateAction<Node[]>>;
+  deleteRouter: (n: number) => void;
+}>({
+  nodes: [
+    {
+      id: routerIds,
+      weight: Infinity,
+      prevNode: undefined,
+    },
+  ],
+  setNodes: (e) => {},
+  deleteRouter: (n: number) => {},
+});
+
 export default function Board() {
   const Dijk = new Dijkstra();
   const [edges, setEdges] = useState<Edge[]>([]);
@@ -24,17 +46,6 @@ export default function Board() {
   const [rootNodeId, setRootNodeId] = useState<number>(0);
   const clickedNodePos = useRef<NodePos | null>(null);
   const [isAnimated, setIsAnimated] = useState<boolean>(false);
-
-  function addNewNode(): void {
-    setNodes((oldNodes) => [
-      ...oldNodes,
-      {
-        id: ++routerIds,
-        weight: Infinity,
-        prevNode: undefined,
-      },
-    ]);
-  }
 
   function receiveClickedNodeData(node: Node, nodePos: NodePos): void {
     if (!clickedNode || !nodePos || clickedNode.id === node.id) {
@@ -110,7 +121,6 @@ export default function Board() {
   }
 
   function receiveWeightChange(lineId: number, weight: number) {
-    console.log(`LineId: ${lineId}| Weight: ${weight}`);
     // Update edges
     setEdges((oldEdges) =>
       oldEdges.map((e) => {
@@ -152,18 +162,20 @@ export default function Board() {
     );
   }
 
-  function receiveDeleteRouter(nodeId: number) {
-    console.log("Del id: ", nodeId);
+  function deleteRouter(nodeId: number) {
+    // Filter out the node
     setNodes((oldNodes) =>
       oldNodes.filter((n) => {
         return n.id !== nodeId;
       })
     );
+    // Remove its edges
     setEdges((oldEdges) =>
       oldEdges.filter((edge) => {
         return !(nodeId === edge.firstNode.id || nodeId === edge.secondNode.id);
       })
     );
+    // Remove the lines
     setLinePos((old) =>
       old.filter((l) => {
         return !(
@@ -187,18 +199,12 @@ export default function Board() {
       ).then((res) => {
         if (!res) return;
         setNodes(res.nodes);
-        console.log(res);
       });
     } else {
       const res = Dijk.performDijkstra(edges, nodes, rootNode);
       setNodes(res.nodes);
-      console.log(res);
     }
   }
-
-  useEffect(() => {
-    console.log("rendering ", linePositions);
-  });
 
   return (
     <>
@@ -216,14 +222,14 @@ export default function Board() {
           linePositions={linePositions}
           onWeightChange={receiveWeightChange}
         ></Lines>
-        <Routers
-          nodes={nodes}
-          onSendRouterPos={receiveNodePos}
-          onAddNewRouter={addNewNode}
-          onSendClickedRouterData={receiveClickedNodeData}
-          onSendRootId={receiveRootNodeId}
-          onSendDeleteRouter={receiveDeleteRouter}
-        ></Routers>
+        <NodeContext.Provider value={{ nodes, setNodes, deleteRouter }}>
+          <Routers
+            onSendRouterPos={receiveNodePos}
+            onSendClickedRouterData={receiveClickedNodeData}
+            onSendRootId={receiveRootNodeId}
+          ></Routers>
+        </NodeContext.Provider>
+
         <MenuBar
           onRunAlgorithm={runAlgorithm}
           rootNodeId={rootNodeId}
