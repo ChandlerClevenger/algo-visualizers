@@ -11,6 +11,7 @@ import Routers from "./Routers";
 import Lines from "./Lines";
 import MenuBar from "./MenuBar";
 import Dijkstra from "../algs/Dijkstra";
+import BellmanFord from "../algs/BellmanFord"
 
 let routerIds = 0;
 let edgesIds = 0;
@@ -32,6 +33,7 @@ export const NodeContext = createContext<{
 
 export default function Board() {
   const Dijk = new Dijkstra();
+  const Bellman = new BellmanFord();
   const [edges, setEdges] = useState<Edge[]>([]);
   const [nodes, setNodes] = useState<Node[]>([
     {
@@ -201,8 +203,8 @@ export default function Board() {
         setNodes(res.nodes);
       });
     } else {
-      const res = Dijk.performDijkstra(edges, nodes, rootNode);
-      setNodes(res.nodes);
+      Bellman.performBellmanFord({edges, nodes}); return;
+      
     }
   }
 
