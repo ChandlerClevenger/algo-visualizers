@@ -7,7 +7,7 @@ export default class BellmanFord {
 
     // Create routers and their initial table
     let routers = this.#initilizeRouters(edges, nodes);
-
+    console.log(routers);
     let hasChanges = true; // True initially so while loop runs
     while (hasChanges) {
       hasChanges = false; // Easier to set this false each loop since it starts true
@@ -47,8 +47,7 @@ export default class BellmanFord {
         });
         hasChanged = true;
       } // Otherwise, If distance is shorter, add new path & dist exists
-      if (!currentDistance)
-        throw new Error("Error, check connections. Invalid distance.");
+      if (!currentDistance) continue;
 
       if (connection.weight + distanceInfo.distance < currentDistance) {
         toRouter.table.set(routerId, {
@@ -107,6 +106,11 @@ export default class BellmanFord {
         nextHop: conn.otherRouterId,
       } as IDistance);
     }
+    table.set(node.id, {
+      destination: node.id,
+      distance: 0,
+      nextHop: node.id,
+    });
     return {
       ...node,
       table: table,
