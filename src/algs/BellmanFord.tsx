@@ -1,7 +1,6 @@
-import { Graph, Edge, Node } from "../types/bin";
-
+import { Graph, Edge, Node, IConnection, IDistance } from "../types/bin";
 export default class BellmanFord {
-  performBellmanFord(G: Graph) {
+  performBellmanFord(G: Graph): Node[] {
     let edges = G.edges;
     let nodes = G.nodes;
 
@@ -23,15 +22,14 @@ export default class BellmanFord {
         }
       }
     }
+    return routers;
   }
 
-  #optimizeTable(
-    connection: IConnection,
-    routers: IRouter[]
-  ): [IRouter[], boolean] {
+  #optimizeTable(connection: IConnection, routers: Node[]): [Node[], boolean] {
     const toRouter = routers.find((r) => connection.otherRouterId === r.id); // Router to optimize
     const fromRouter = routers.find((r) => connection.selfRouterId === r.id);
-    if (!toRouter || !fromRouter) throw new Error("Error, check connections.");
+    if (!toRouter || !fromRouter || !toRouter.table || !fromRouter.table)
+      throw new Error("Error, check connections.");
 
     let hasChanged = false; // Assume no changes
     for (const [routerId, distanceInfo] of fromRouter.table.entries()) {
@@ -69,8 +67,8 @@ export default class BellmanFord {
     return [routers, hasChanged];
   }
 
-  #initilizeRouters(edges: Edge[], nodes: Node[]): IRouter[] {
-    let routers: IRouter[] = [];
+  #initilizeRouters(edges: Edge[], nodes: Node[]): Node[] {
+    let routers: Node[] = [];
     for (const node of nodes) {
       const connections = this.#getConnections(node.id, edges); // Get immediate neighbors
       const router = this.#initilizeRouterTable(node, connections);
@@ -96,7 +94,7 @@ export default class BellmanFord {
     return connectedEdges;
   }
 
-  #initilizeRouterTable(node: Node, connections: IConnection[]): IRouter {
+  #initilizeRouterTable(node: Node, connections: IConnection[]): Node {
     const table = new Map<number, IDistance>();
     // Populate table based on connections
     for (const conn of connections) {
@@ -116,17 +114,4 @@ export default class BellmanFord {
       table: table,
     };
   }
-}
-interface IDistance {
-  destination: number;
-  distance: number;
-  nextHop: number;
-}
-interface IRouter extends Node {
-  table: Map<number, IDistance>; // Destination NodeId and Distance info
-}
-interface IConnection {
-  selfRouterId: number;
-  otherRouterId: number;
-  weight: number;
 }
