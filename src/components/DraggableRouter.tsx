@@ -53,7 +53,7 @@ export default function Router({
         ) : null}
         {algorithm === Algorithms.BellmenFord ? (
           <>
-            <table className="table table-dark bellmantable">
+            <table className="table table-dark table-hover table-responsive style-3 bellmantable">
               <thead>
                 <tr>
                   <th scope="col">Dest</th>
