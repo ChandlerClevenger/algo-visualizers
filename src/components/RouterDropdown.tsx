@@ -9,7 +9,7 @@ export default function RouterDropdown({
 }: IRouterDropdown) {
   const WIDTH = 125;
 
-  const { nodes, setNodes, deleteRouter } = useContext(NodeContext);
+  const { deleteRouter } = useContext(NodeContext);
   function handleMouseMove(e: MouseEvent) {
     const isOverDropdown = (e.target as HTMLElement).classList.contains(
       "list-group-item"

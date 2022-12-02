@@ -33,3 +33,19 @@
   padding: 1rem;
   width: 50vw;
 }
+
+.bellmantable {
+  position: absolute;
+  transform: scale(-50%) translateY(50%) translateX(-25%);
+  text-align: center;
+  display: block;
+}
+.bellmantable:hover {
+  position: absolute;
+  transform: scale(100%) translateY(0%) translateX(-25%);
+  text-align: center;
+  display: block;
+}
+.bellmantable * {
+  font-size: 0.5rem !important;
+}

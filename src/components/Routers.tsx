@@ -24,7 +24,10 @@ export default function Routers({
     // Must move at least 100 px out of start area
     if (x < 100 && y < 100) return;
     // Detect click
-    if (currentDraggedRef.current.x == x && currentDraggedRef.current.y == y) {
+    if (
+      currentDraggedRef.current.x === x &&
+      currentDraggedRef.current.y === y
+    ) {
       switch (e.button) {
         case 0:
           handleLeftClick(info);
@@ -37,7 +40,7 @@ export default function Routers({
       }
       return;
     }
-    if (DRAGGED_ID == lastNode.id) {
+    if (DRAGGED_ID === lastNode.id) {
       // Add new node
       const newNode: Node = { id: ++nodeIds, weight: 0, prevNode: undefined };
       setNodes((oldNodes) => {
@@ -73,7 +76,7 @@ export default function Routers({
   function handleLeftClick(info: DraggableData) {
     onSendClickedRouterData(
       nodes.find((r: Node) => {
-        return r.id == Number(info.node.id);
+        return r.id === Number(info.node.id);
       }),
       {
         id: Number(info.node.id),
@@ -94,6 +97,7 @@ export default function Routers({
           size={75}
           prevNode={router.prevNode}
           weight={router.weight}
+          table={router.table}
         ></Router>
       ))}
       {dropdownData ? (

@@ -6,12 +6,12 @@ import {
   Dispatch,
   SetStateAction,
 } from "react";
-import { Edge, LinePos, Node, NodePos } from "../types/bin";
+import { Algorithms, Edge, LinePos, Node, NodePos } from "../types/bin";
 import Routers from "./Routers";
 import Lines from "./Lines";
 import MenuBar from "./MenuBar";
 import Dijkstra from "../algs/Dijkstra";
-import BellmanFord from "../algs/BellmanFord"
+import BellmanFord from "../algs/BellmanFord";
 
 let routerIds = 0;
 let edgesIds = 0;
@@ -19,6 +19,7 @@ export const NodeContext = createContext<{
   nodes: Node[];
   setNodes: Dispatch<SetStateAction<Node[]>>;
   deleteRouter: (n: number) => void;
+  algorithm: Algorithms;
 }>({
   nodes: [
     {
@@ -29,6 +30,7 @@ export const NodeContext = createContext<{
   ],
   setNodes: (e) => {},
   deleteRouter: (n: number) => {},
+  algorithm: Algorithms.Dijkstra,
 });
 
 export default function Board() {
@@ -48,6 +50,7 @@ export default function Board() {
   const [rootNodeId, setRootNodeId] = useState<number>(0);
   const clickedNodePos = useRef<NodePos | null>(null);
   const [isAnimated, setIsAnimated] = useState<boolean>(false);
+  const [algorithm, setAlgorithm] = useState<Algorithms>(Algorithms.Dijkstra);
 
   function receiveClickedNodeData(node: Node, nodePos: NodePos): void {
     if (!clickedNode || !nodePos || clickedNode.id === node.id) {
@@ -192,7 +195,7 @@ export default function Board() {
       return node.id === rootNodeId;
     });
     if (!rootNode) return;
-    if (isAnimated) {
+    if (isAnimated && algorithm === Algorithms.Dijkstra) {
       Dijk.animatedPerformDijkstra(
         edges,
         nodes,
@@ -202,9 +205,16 @@ export default function Board() {
         if (!res) return;
         setNodes(res.nodes);
       });
-    } else {
-      Bellman.performBellmanFord({edges, nodes}); return;
-      
+    } else if (algorithm === Algorithms.Dijkstra) {
+      const res = Dijk.performDijkstra(edges, nodes, rootNode);
+      setNodes(res.nodes);
+      console.log(nodes);
+      // Bellman.performBellmanFord({ edges, nodes });
+      return;
+    } else if (algorithm === Algorithms.BellmenFord) {
+      const res = Bellman.performBellmanFord({ edges, nodes });
+      setNodes(res);
+      console.log(res);
     }
   }
 
@@ -224,7 +234,9 @@ export default function Board() {
           linePositions={linePositions}
           onWeightChange={receiveWeightChange}
         ></Lines>
-        <NodeContext.Provider value={{ nodes, setNodes, deleteRouter }}>
+        <NodeContext.Provider
+          value={{ nodes, setNodes, deleteRouter, algorithm }}
+        >
           <Routers
             onSendRouterPos={receiveNodePos}
             onSendClickedRouterData={receiveClickedNodeData}
@@ -234,6 +246,9 @@ export default function Board() {
 
         <MenuBar
           onRunAlgorithm={runAlgorithm}
+          onAlgorithmChange={(alg: Algorithms) => {
+            setAlgorithm(alg);
+          }}
           rootNodeId={rootNodeId}
           clickedNodeId={clickedNode?.id}
           isAnimated={isAnimated}

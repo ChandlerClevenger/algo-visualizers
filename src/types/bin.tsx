@@ -28,6 +28,19 @@ export interface Node {
   id: number;
   prevNode: Node | undefined; //Initially will be unset
   weight: number;
+  table?: Map<number, IDistance>; // Destination NodeId and Distance info
+}
+
+export interface IDistance {
+  destination: number;
+  distance: number;
+  nextHop: number;
+}
+
+export interface IConnection {
+  selfRouterId: number;
+  otherRouterId: number;
+  weight: number;
 }
 
 export interface Edge {
@@ -59,4 +72,9 @@ export interface IRouters {
   onSendClickedRouterData(node: Node | undefined, { id, x, y }: NodePos): void;
   onSendRouterPos({ id, x, y }: NodePos): void;
   onSendRootId(routerId: number): void;
+}
+
+export enum Algorithms {
+  BellmenFord,
+  Dijkstra,
 }

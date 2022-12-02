@@ -1,6 +1,7 @@
-import React, { useRef } from "react";
+import React, { useRef, useContext } from "react";
 import Draggable from "react-draggable";
-import { RouterInt } from "../types/bin";
+import { Algorithms, RouterInt } from "../types/bin";
+import { NodeContext } from "./Board";
 
 export default function Router({
   id,
@@ -9,9 +10,10 @@ export default function Router({
   onDrag,
   size,
   weight,
+  table,
 }: RouterInt) {
   const draggableRef = useRef<Draggable>(null);
-
+  const { algorithm } = useContext(NodeContext);
   function stopMenu(
     e: React.MouseEvent<HTMLImageElement | HTMLParagraphElement, MouseEvent>
   ) {
@@ -46,7 +48,33 @@ export default function Router({
           alt="Placeable Router"
         />
         <p className="text-center m-0">Id: {id}</p>
-        <p className="text-center">Weight: {weight}</p>
+        {algorithm === Algorithms.Dijkstra ? (
+          <p className="text-center">Weight: {weight}</p>
+        ) : null}
+        {algorithm === Algorithms.BellmenFord ? (
+          <>
+            <table className="table table-dark bellmantable">
+              <thead>
+                <tr>
+                  <th scope="col">Dest</th>
+                  <th scope="col">Dist</th>
+                  <th scope="col">nextHop</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...(table?.values() ?? [])].map((e) => {
+                  return (
+                    <tr>
+                      <td>{e.destination}</td>
+                      <td>{e.distance}</td>
+                      <td>{e.nextHop}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </>
+        ) : null}
       </div>
     </Draggable>
   );
