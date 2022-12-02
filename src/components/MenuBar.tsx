@@ -58,7 +58,7 @@ export default function MenuBar({
             }}
           />
           <label className="btn btn-secondary" htmlFor="dijkstra">
-            Dijkstras
+            Dijkstra's
           </label>
 
           <input
@@ -73,7 +73,7 @@ export default function MenuBar({
             }}
           />
           <label className="btn btn-secondary" htmlFor="bellmanford">
-            Bellmen-Ford
+            Bellman-Ford
           </label>
         </div>
       </div>
