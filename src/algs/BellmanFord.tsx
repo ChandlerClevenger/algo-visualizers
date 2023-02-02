@@ -1,6 +1,7 @@
 import { Graph, Edge, Node, IConnection, IDistance } from "../types/bin";
+import { movePacket } from "../utils/BellmanFordAnimations";
 export default class BellmanFord {
-  performBellmanFord(G: Graph): Node[] {
+  async performBellmanFord(G: Graph, isAnimated = false): Promise<Node[]> {
     let edges = G.edges;
     let nodes = G.nodes;
 
@@ -17,7 +18,11 @@ export default class BellmanFord {
         const conns = this.#getConnections(router.id, edges);
         for (const con of conns) {
           let localHasChanged = false;
-          [routers, localHasChanged] = this.#optimizeTable(con, routers);
+          [routers, localHasChanged] = await this.#optimizeTable(
+            con,
+            routers,
+            isAnimated
+          );
           hasChanges = localHasChanged || hasChanges; // Keeps true if any localHasChanged return true once
         }
       }
@@ -25,7 +30,11 @@ export default class BellmanFord {
     return routers;
   }
 
-  #optimizeTable(connection: IConnection, routers: Node[]): [Node[], boolean] {
+  async #optimizeTable(
+    connection: IConnection,
+    routers: Node[],
+    isAnimated: boolean
+  ): Promise<[Node[], boolean]> {
     const toRouter = routers.find((r) => connection.otherRouterId === r.id); // Router to optimize
     const fromRouter = routers.find((r) => connection.selfRouterId === r.id);
     if (!toRouter || !fromRouter || !toRouter.table || !fromRouter.table)
@@ -34,8 +43,11 @@ export default class BellmanFord {
     let hasChanged = false; // Assume no changes
     for (const [routerId, distanceInfo] of fromRouter.table.entries()) {
       if (distanceInfo.nextHop === toRouter.id) continue; // Dont 'send' optimize route to nextHop already in path
-      const currentDistance = toRouter.table.get(routerId)?.distance;
 
+      // Animate sending of data
+      if (isAnimated) await movePacket(`${fromRouter.id}`, `${toRouter.id}`);
+
+      const currentDistance = toRouter.table.get(routerId)?.distance;
       if (!toRouter.table.has(routerId)) {
         // If not set routerId then add newly found Router
         toRouter.table.set(routerId, {

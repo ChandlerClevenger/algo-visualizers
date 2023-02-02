@@ -212,8 +212,11 @@ export default function Board() {
       // Bellman.performBellmanFord({ edges, nodes });
       return;
     } else if (algorithm === Algorithms.BellmenFord) {
-      const res = Bellman.performBellmanFord({ edges, nodes });
-      setNodes(res);
+      const res = Bellman.performBellmanFord({ edges, nodes }, isAnimated).then(
+        (res) => {
+          setNodes(res);
+        }
+      );
       console.log(res);
     }
   }
