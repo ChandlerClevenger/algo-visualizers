@@ -41,6 +41,7 @@
   display: block;
 }
 .bellmantable:hover {
+  scale: 1.5;
 }
 .bellmantable thead {
   position: sticky;
