@@ -2,7 +2,12 @@
 
 This projects goal is to create an educational tool to teach algorithms by visualization. 
 
-## Current Algorithms
+## Current Algorithms Implemented
+
+- [x] Dijkstras
+- [x] Bellman-Ford
+
+## Current Algorithms Animated
 
 - [x] Dijkstras
 - [ ] Bellman-Ford
