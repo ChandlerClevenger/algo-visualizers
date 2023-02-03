@@ -1,3 +1,5 @@
+import Animation from "./Animation";
+
 type point = {
   x: number;
   y: number;
@@ -31,6 +33,23 @@ export async function movePacket(idSelectorOne: string, idSelectorTwo: string) {
   // Remove the image when it has completed animation
   svg.remove();
 }
+export function lineBlinkGreen(selector: string | string[]) {
+  return new Animation(
+    selector,
+    [
+      {},
+      {
+        stroke: "#0F0",
+      },
+      {},
+    ],
+    {
+      duration: 2000,
+      iterations: 1,
+    }
+  );
+}
+
 function getPoint(idSelector: string): point {
   const el = document.getElementById(idSelector);
   if (!el) throw Error("Check selector");

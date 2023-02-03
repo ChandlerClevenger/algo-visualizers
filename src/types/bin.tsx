@@ -41,6 +41,7 @@ export interface IConnection {
   selfRouterId: number;
   otherRouterId: number;
   weight: number;
+  lineId: number;
 }
 
 export interface Edge {

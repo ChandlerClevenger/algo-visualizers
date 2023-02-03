@@ -1,12 +1,19 @@
 import { Graph, Edge, Node, IConnection, IDistance } from "../types/bin";
-import { movePacket } from "../utils/BellmanFordAnimations";
+import { movePacket, lineBlinkGreen } from "../utils/BellmanFordAnimations";
+import { AnimationQueue } from "../utils/Animator";
+const animationQ = new AnimationQueue("animate-check");
+
 export default class BellmanFord {
   async performBellmanFord(G: Graph, isAnimated = false): Promise<Node[]> {
     let edges = G.edges;
     let nodes = G.nodes;
 
     // Create routers and their initial table
-    let routers = this.#initilizeRouters(edges, nodes);
+    let routers = await this.#initilizeRouters(edges, nodes, isAnimated).then(
+      (res) => {
+        return res;
+      }
+    );
     console.log(routers);
     let hasChanges = true; // True initially so while loop runs
     while (hasChanges) {
@@ -49,6 +56,10 @@ export default class BellmanFord {
 
       const currentDistance = toRouter.table.get(routerId)?.distance;
       if (!toRouter.table.has(routerId)) {
+        // Animate newly found router
+        //console.log(this.#getLineIds(routers, connection, routerId));
+        if (isAnimated)
+          await animationQ.run(lineBlinkGreen(`#line-${connection.lineId}`));
         // If not set routerId then add newly found Router
         toRouter.table.set(routerId, {
           nextHop: fromRouter.id,
@@ -79,12 +90,17 @@ export default class BellmanFord {
     return [routers, hasChanged];
   }
 
-  #initilizeRouters(edges: Edge[], nodes: Node[]): Node[] {
+  async #initilizeRouters(
+    edges: Edge[],
+    nodes: Node[],
+    isAnimated: boolean
+  ): Promise<Node[]> {
     let routers: Node[] = [];
     for (const node of nodes) {
       const connections = this.#getConnections(node.id, edges); // Get immediate neighbors
-      const router = this.#initilizeRouterTable(node, connections);
-      routers.push(router);
+      await this.#initilizeRouterTable(node, connections, isAnimated).then(
+        (res) => routers.push(res)
+      );
     }
 
     return routers;
@@ -100,13 +116,18 @@ export default class BellmanFord {
           selfRouterId: nodeId,
           otherRouterId: otherId,
           weight: edge.weight,
+          lineId: edge.id,
         });
       }
     }
     return connectedEdges;
   }
 
-  #initilizeRouterTable(node: Node, connections: IConnection[]): Node {
+  async #initilizeRouterTable(
+    node: Node,
+    connections: IConnection[],
+    isAnimated: boolean
+  ): Promise<Node> {
     const table = new Map<number, IDistance>();
     // Populate table based on connections
     for (const conn of connections) {
@@ -115,6 +136,13 @@ export default class BellmanFord {
         distance: conn.weight,
         nextHop: conn.otherRouterId,
       } as IDistance);
+      // Animate sending of data
+      if (isAnimated)
+        await movePacket(`${conn.selfRouterId}`, `${conn.otherRouterId}`);
+
+      // Animate newly found router
+      if (isAnimated)
+        await animationQ.run(lineBlinkGreen(`#line-${conn.lineId}`));
     }
     table.set(node.id, {
       destination: node.id,
@@ -125,5 +153,31 @@ export default class BellmanFord {
       ...node,
       table: table,
     };
+  }
+
+  #getLineIds(
+    routers: Node[],
+    connection: IConnection,
+    targetRouterId: number
+  ): string | string[] {
+    let lines: string[] = [];
+    if (connection.otherRouterId === targetRouterId)
+      return [...lines, `#line-${connection.otherRouterId}`];
+    console.log(
+      `${connection.otherRouterId} is learning of router ${targetRouterId} from router ${connection.selfRouterId}`
+    );
+
+    // query table of other router..
+    return this.#getLineIds(routers, connection, targetRouterId); // need to replace connection
+    console.log(routers);
+    return [`#line-${connection.lineId}`];
+  }
+
+  #getRouterById(routers: Node[], id: number) {
+    for (let router of routers) {
+      if (router.id === id) {
+        return router;
+      }
+    }
   }
 }
