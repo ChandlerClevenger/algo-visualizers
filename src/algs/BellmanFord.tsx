@@ -2,6 +2,7 @@ import { Graph, Edge, Node, IConnection, IDistance } from "../types/bin";
 import {
   movePacket,
   lineBlinkGreen,
+  lineBlinkOrange,
   routerBlink,
 } from "../utils/BellmanFordAnimations";
 import { AnimationQueue } from "../utils/Animator";
@@ -86,10 +87,6 @@ export default class BellmanFord {
 
         // Animate newly found router
         if (isAnimated) {
-          await this.#animateNewlyFoundRouter(
-            `#line-${connection.lineId}`,
-            `#router-img-${routerId}`
-          );
           // Update router table display
           setNodes((prevNodes) => {
             return prevNodes.map((e) => {
@@ -97,6 +94,11 @@ export default class BellmanFord {
               return e;
             });
           });
+
+          await this.#animateNewlyFoundRouter(
+            `#line-${connection.lineId}`,
+            `#router-img-${routerId}`
+          );
         }
       } // Otherwise, If distance is shorter, add new path & dist exists
       if (!currentDistance) continue;
@@ -108,6 +110,21 @@ export default class BellmanFord {
           distance: connection.weight + distanceInfo.distance,
         });
         hasChanged = true;
+
+        // Animate new shortest path
+        if (isAnimated) {
+          // Visually update table
+          setNodes((prevNodes) =>
+            prevNodes.map((n) => {
+              if (n.id === toRouter.id) return toRouter;
+              return n;
+            })
+          );
+          await this.#animateNewlyShortestPath(
+            `#line-${connection.lineId}`,
+            `#router-img-${routerId}`
+          );
+        }
       }
     }
     routers = routers.map((r) => {
@@ -163,6 +180,15 @@ export default class BellmanFord {
     routerId: string | string[]
   ) {
     const linePromise = animationQ.run(lineBlinkGreen(lineIds));
+    const routerPromise = animationQ.run(routerBlink(routerId));
+    await Promise.allSettled([linePromise, routerPromise]);
+  }
+
+  async #animateNewlyShortestPath(
+    lineIds: string | string[],
+    routerId: string | string[]
+  ) {
+    const linePromise = animationQ.run(lineBlinkOrange(lineIds));
     const routerPromise = animationQ.run(routerBlink(routerId));
     await Promise.allSettled([linePromise, routerPromise]);
   }

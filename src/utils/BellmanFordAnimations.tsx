@@ -49,6 +49,22 @@ export function lineBlinkGreen(selector: string | string[]) {
     }
   );
 }
+export function lineBlinkOrange(selector: string | string[]) {
+  return new Animation(
+    selector,
+    [
+      {},
+      {
+        stroke: "#DC6601",
+      },
+      {},
+    ],
+    {
+      duration: 2000,
+      iterations: 1,
+    }
+  );
+}
 export function routerBlink(selector: string | string[]) {
   return new Animation(
     selector,
