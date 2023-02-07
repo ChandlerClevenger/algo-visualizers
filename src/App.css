@@ -51,7 +51,7 @@
   font-size: 0.5rem !important;
 }
 .table-responsive {
-  max-height: 12vh;
+  max-height: 20vh;
   width: fit-content;
 }
 
