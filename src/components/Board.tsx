@@ -212,11 +212,13 @@ export default function Board() {
       // Bellman.performBellmanFord({ edges, nodes });
       return;
     } else if (algorithm === Algorithms.BellmenFord) {
-      const res = Bellman.performBellmanFord({ edges, nodes }, isAnimated).then(
-        (res) => {
-          setNodes(res);
-        }
-      );
+      const res = Bellman.performBellmanFord(
+        { edges, nodes },
+        setNodes,
+        isAnimated
+      ).then((res) => {
+        setNodes(res);
+      });
       console.log(res);
     }
   }
@@ -227,6 +229,7 @@ export default function Board() {
         id="board"
         className="w-100 h-100 bg-secondary position-relative"
         onContextMenu={(e) => {
+          if (e.target === document.getElementById("lines")) return;
           e.preventDefault();
           e.stopPropagation();
           e.bubbles = false;
