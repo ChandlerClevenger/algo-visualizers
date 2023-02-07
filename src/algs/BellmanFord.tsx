@@ -4,7 +4,6 @@ import {
   lineBlinkGreen,
   routerBlink,
 } from "../utils/BellmanFordAnimations";
-import * as DijkAnim from "../utils/DijkstraAnimations";
 import { AnimationQueue } from "../utils/Animator";
 import { Dispatch, SetStateAction } from "react";
 const animationQ = new AnimationQueue("animate-check");
@@ -28,11 +27,10 @@ export default class BellmanFord {
       });
 
     // Create routers and their initial table
-    let routers = await this.#initilizeRouters(edges, nodes, isAnimated).then(
-      (res) => {
-        return res;
-      }
-    );
+    let routers = this.#initilizeRouters(nodes);
+
+    // Show tables after initialized
+    if (isAnimated) setNodes(routers);
 
     console.log(routers);
     let hasChanges = true; // True initially so while loop runs
@@ -48,7 +46,8 @@ export default class BellmanFord {
           [routers, localHasChanged] = await this.#optimizeTable(
             con,
             routers,
-            isAnimated
+            isAnimated,
+            setNodes
           );
           hasChanges = localHasChanged || hasChanges; // Keeps true if any localHasChanged return true once
         }
@@ -60,7 +59,8 @@ export default class BellmanFord {
   async #optimizeTable(
     connection: IConnection,
     routers: Node[],
-    isAnimated: boolean
+    isAnimated: boolean,
+    setNodes: Dispatch<SetStateAction<Node[]>>
   ): Promise<[Node[], boolean]> {
     const toRouter = routers.find((r) => connection.otherRouterId === r.id); // Router to optimize
     const fromRouter = routers.find((r) => connection.selfRouterId === r.id);
@@ -76,14 +76,6 @@ export default class BellmanFord {
 
       const currentDistance = toRouter.table.get(routerId)?.distance;
       if (!toRouter.table.has(routerId)) {
-        // Animate newly found router
-        if (isAnimated) {
-          await this.#animateNewlyFoundRouter(
-            `#line-${connection.lineId}`,
-            `#router-img-${routerId}`
-          );
-        }
-
         // If not set routerId then add newly found Router
         toRouter.table.set(routerId, {
           nextHop: fromRouter.id,
@@ -91,6 +83,21 @@ export default class BellmanFord {
           distance: connection.weight + distanceInfo.distance,
         });
         hasChanged = true;
+
+        // Animate newly found router
+        if (isAnimated) {
+          await this.#animateNewlyFoundRouter(
+            `#line-${connection.lineId}`,
+            `#router-img-${routerId}`
+          );
+          // Update router table display
+          setNodes((prevNodes) => {
+            return prevNodes.map((e) => {
+              if (e.id === fromRouter.id) return fromRouter;
+              return e;
+            });
+          });
+        }
       } // Otherwise, If distance is shorter, add new path & dist exists
       if (!currentDistance) continue;
 
@@ -114,17 +121,21 @@ export default class BellmanFord {
     return [routers, hasChanged];
   }
 
-  async #initilizeRouters(
-    edges: Edge[],
-    nodes: Node[],
-    isAnimated: boolean
-  ): Promise<Node[]> {
+  #initilizeRouters(nodes: Node[]): Node[] {
     let routers: Node[] = [];
     for (const node of nodes) {
-      const connections = this.#getConnections(node.id, edges); // Get immediate neighbors
-      await this.#initilizeRouterTable(node, connections, isAnimated).then(
-        (res) => routers.push(res)
-      );
+      const table = new Map<number, IDistance>();
+
+      table.set(node.id, {
+        destination: node.id,
+        distance: 0,
+        nextHop: node.id,
+      });
+
+      routers.push({
+        ...node,
+        table: table,
+      });
     }
 
     return routers;
@@ -147,40 +158,6 @@ export default class BellmanFord {
     return connectedEdges;
   }
 
-  async #initilizeRouterTable(
-    node: Node,
-    connections: IConnection[],
-    isAnimated: boolean
-  ): Promise<Node> {
-    const table = new Map<number, IDistance>();
-    // Populate table based on connections
-    for (const conn of connections) {
-      table.set(conn.otherRouterId, {
-        destination: conn.otherRouterId,
-        distance: conn.weight,
-        nextHop: conn.otherRouterId,
-      } as IDistance);
-      // Animate sending of data
-      if (isAnimated)
-        await movePacket(`${conn.selfRouterId}`, `${conn.otherRouterId}`);
-
-      // Animate newly found router
-      if (isAnimated)
-        await this.#animateNewlyFoundRouter(
-          `#line-${conn.lineId}`,
-          `#router-img-${conn.otherRouterId}`
-        );
-    }
-    table.set(node.id, {
-      destination: node.id,
-      distance: 0,
-      nextHop: node.id,
-    });
-    return {
-      ...node,
-      table: table,
-    };
-  }
   async #animateNewlyFoundRouter(
     lineIds: string | string[],
     routerId: string | string[]
