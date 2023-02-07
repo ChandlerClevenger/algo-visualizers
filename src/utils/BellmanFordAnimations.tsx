@@ -49,6 +49,26 @@ export function lineBlinkGreen(selector: string | string[]) {
     }
   );
 }
+export function routerBlink(selector: string | string[]) {
+  return new Animation(
+    selector,
+    [
+      {
+        opacity: "100%",
+      },
+      {
+        opacity: "0%",
+      },
+      {
+        opacity: "100%",
+      },
+    ],
+    {
+      duration: 2000,
+      iterations: 1,
+    }
+  );
+}
 
 function getPoint(idSelector: string): point {
   const el = document.getElementById(idSelector);
