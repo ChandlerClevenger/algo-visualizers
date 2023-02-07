@@ -20,11 +20,7 @@ export class AnimationQueue {
   }
 
   async run(animationDatum: Animation) {
-    if (
-      !this.#is_wanting_played() ||
-      animationDatum.selector === "" ||
-      this._isPlaying
-    ) {
+    if (!this.#is_wanting_played() || animationDatum.selector === "") {
       if (!this.#is_wanting_played()) {
         this.cleanupPeristentAnimations();
       }
@@ -35,7 +31,7 @@ export class AnimationQueue {
     const currentElements = document.querySelectorAll(animationDatum.selector);
     currentElements.forEach((el) => {
       const anim = el.animate(animationDatum.animation, animationDatum.options);
-      if (animationDatum.options?.fill == "forwards") {
+      if (animationDatum.options?.fill === "forwards") {
         this._persistentAnimations.push(anim);
       }
       this._promises.push(anim.finished);
