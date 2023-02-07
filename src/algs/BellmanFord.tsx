@@ -1,12 +1,31 @@
 import { Graph, Edge, Node, IConnection, IDistance } from "../types/bin";
-import { movePacket, lineBlinkGreen } from "../utils/BellmanFordAnimations";
+import {
+  movePacket,
+  lineBlinkGreen,
+  routerBlink,
+} from "../utils/BellmanFordAnimations";
+import * as DijkAnim from "../utils/DijkstraAnimations";
 import { AnimationQueue } from "../utils/Animator";
+import { Dispatch, SetStateAction } from "react";
 const animationQ = new AnimationQueue("animate-check");
 
 export default class BellmanFord {
-  async performBellmanFord(G: Graph, isAnimated = false): Promise<Node[]> {
+  async performBellmanFord(
+    G: Graph,
+    setNodes: Dispatch<SetStateAction<Node[]>>,
+    isAnimated = false
+  ): Promise<Node[]> {
     let edges = G.edges;
     let nodes = G.nodes;
+
+    // Visually reset router tables
+    if (isAnimated)
+      setNodes((prevNodes) => {
+        return prevNodes.map((e) => {
+          delete e.table;
+          return e;
+        });
+      });
 
     // Create routers and their initial table
     let routers = await this.#initilizeRouters(edges, nodes, isAnimated).then(
@@ -14,6 +33,7 @@ export default class BellmanFord {
         return res;
       }
     );
+
     console.log(routers);
     let hasChanges = true; // True initially so while loop runs
     while (hasChanges) {
@@ -57,9 +77,13 @@ export default class BellmanFord {
       const currentDistance = toRouter.table.get(routerId)?.distance;
       if (!toRouter.table.has(routerId)) {
         // Animate newly found router
-        //console.log(this.#getLineIds(routers, connection, routerId));
-        if (isAnimated)
-          await animationQ.run(lineBlinkGreen(`#line-${connection.lineId}`));
+        if (isAnimated) {
+          await this.#animateNewlyFoundRouter(
+            `#line-${connection.lineId}`,
+            `#router-img-${routerId}`
+          );
+        }
+
         // If not set routerId then add newly found Router
         toRouter.table.set(routerId, {
           nextHop: fromRouter.id,
@@ -142,7 +166,10 @@ export default class BellmanFord {
 
       // Animate newly found router
       if (isAnimated)
-        await animationQ.run(lineBlinkGreen(`#line-${conn.lineId}`));
+        await this.#animateNewlyFoundRouter(
+          `#line-${conn.lineId}`,
+          `#router-img-${conn.otherRouterId}`
+        );
     }
     table.set(node.id, {
       destination: node.id,
@@ -153,6 +180,14 @@ export default class BellmanFord {
       ...node,
       table: table,
     };
+  }
+  async #animateNewlyFoundRouter(
+    lineIds: string | string[],
+    routerId: string | string[]
+  ) {
+    const linePromise = animationQ.run(lineBlinkGreen(lineIds));
+    const routerPromise = animationQ.run(routerBlink(routerId));
+    await Promise.allSettled([linePromise, routerPromise]);
   }
 
   #getLineIds(
@@ -169,8 +204,8 @@ export default class BellmanFord {
 
     // query table of other router..
     return this.#getLineIds(routers, connection, targetRouterId); // need to replace connection
-    console.log(routers);
-    return [`#line-${connection.lineId}`];
+    // console.log(routers);
+    // return [`#line-${connection.lineId}`];
   }
 
   #getRouterById(routers: Node[], id: number) {
