@@ -190,7 +190,7 @@ export default function Board() {
     );
   }
 
-  function runAlgorithm(e: MouseEvent) {
+  async function runAlgorithm(e: MouseEvent) {
     const rootNode = nodes.find((node) => {
       return node.id === rootNodeId;
     });
@@ -212,14 +212,12 @@ export default function Board() {
       // Bellman.performBellmanFord({ edges, nodes });
       return;
     } else if (algorithm === Algorithms.BellmenFord) {
-      const res = Bellman.performBellmanFord(
+      const res = await Bellman.performBellmanFord(
         { edges, nodes },
         setNodes,
         isAnimated
-      ).then((res) => {
-        setNodes(res);
-      });
-      console.log(res);
+      );
+      setNodes(res);
     }
   }
 
