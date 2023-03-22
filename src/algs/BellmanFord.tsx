@@ -33,7 +33,6 @@ export default class BellmanFord {
     // Show tables after initialized
     if (isAnimated) setNodes(routers);
 
-    console.log(routers);
     let hasChanges = true; // True initially so while loop runs
     while (hasChanges) {
       hasChanges = false; // Easier to set this false each loop since it starts true
@@ -48,7 +47,8 @@ export default class BellmanFord {
             con,
             routers,
             isAnimated,
-            setNodes
+            setNodes,
+            edges
           );
           hasChanges = localHasChanged || hasChanges; // Keeps true if any localHasChanged return true once
         }
@@ -61,7 +61,8 @@ export default class BellmanFord {
     connection: IConnection,
     routers: Node[],
     isAnimated: boolean,
-    setNodes: Dispatch<SetStateAction<Node[]>>
+    setNodes: Dispatch<SetStateAction<Node[]>>,
+    edges: Edge[]
   ): Promise<[Node[], boolean]> {
     const toRouter = routers.find((r) => connection.otherRouterId === r.id); // Router to optimize
     const fromRouter = routers.find((r) => connection.selfRouterId === r.id);
@@ -94,7 +95,7 @@ export default class BellmanFord {
               return e;
             });
           });
-
+          this.#getLineIds(routers, connection, routerId, edges);
           await this.#animateNewlyFoundRouter(
             `#line-${connection.lineId}`,
             `#router-img-${routerId}`
@@ -196,19 +197,39 @@ export default class BellmanFord {
   #getLineIds(
     routers: Node[],
     connection: IConnection,
-    targetRouterId: number
+    targetRouterId: number,
+    edges: Edge[]
   ): string | string[] {
     let lines: string[] = [];
+    let failsafe = 100;
+    lines.push(`#line-${connection.lineId}`)
+    let currentRouterId: number = connection.selfRouterId;
+    while (currentRouterId !== targetRouterId && failsafe) {
+      const r = this.#getRouterById(routers, currentRouterId);
+      const rConns = this.#getConnections(currentRouterId, edges);
+      const nRHop = r?.table?.get(targetRouterId)?.nextHop;
+      const c = rConns.find(c => c.otherRouterId === nRHop)
+      lines.push(`#lines-${c?.lineId}`);
+      if (c === undefined) throw Error ("Failure to find currentRouter");
+      currentRouterId = c.otherRouterId;
+      console.log(c)
+      console.log(targetRouterId)
+      console.log(lines)
+      failsafe--;
+    }
+    return [];
+  }
+  #traverseLines(
+    routers: Node[],
+    connection: IConnection,
+    targetRouterId: number
+  ): string[] {
     if (connection.otherRouterId === targetRouterId)
-      return [...lines, `#line-${connection.otherRouterId}`];
+      return [...`#line-${connection.lineId}`];
     console.log(
       `${connection.otherRouterId} is learning of router ${targetRouterId} from router ${connection.selfRouterId}`
     );
-
-    // query table of other router..
-    return this.#getLineIds(routers, connection, targetRouterId); // need to replace connection
-    // console.log(routers);
-    // return [`#line-${connection.lineId}`];
+    return [...`#line-${connection.lineId}`];
   }
 
   #getRouterById(routers: Node[], id: number) {
