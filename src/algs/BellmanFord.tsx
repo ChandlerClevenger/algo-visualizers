@@ -28,7 +28,7 @@ export default class BellmanFord {
       });
 
     // Create routers and their initial table
-    let routers = this.#initilizeRouters(nodes);
+    let routers = this.#initilizeRouters(nodes, edges);
 
     // Show tables after initialized
     if (isAnimated) setNodes(routers);
@@ -95,9 +95,8 @@ export default class BellmanFord {
               return e;
             });
           });
-          this.#getLineIds(routers, connection, routerId, edges);
           await this.#animateNewlyFoundRouter(
-            `#line-${connection.lineId}`,
+            this.#getLineIds(routers, connection, routerId, edges),
             `#router-img-${routerId}`
           );
         }
@@ -122,7 +121,7 @@ export default class BellmanFord {
             })
           );
           await this.#animateNewlyShortestPath(
-            `#line-${connection.lineId}`,
+            this.#getLineIds(routers, connection, routerId, edges),
             `#router-img-${routerId}`
           );
         }
@@ -139,7 +138,7 @@ export default class BellmanFord {
     return [routers, hasChanged];
   }
 
-  #initilizeRouters(nodes: Node[]): Node[] {
+  #initilizeRouters(nodes: Node[], edges: Edge[]): Node[] {
     let routers: Node[] = [];
     for (const node of nodes) {
       const table = new Map<number, IDistance>();
@@ -149,6 +148,15 @@ export default class BellmanFord {
         distance: 0,
         nextHop: node.id,
       });
+
+      for (const neighboringCon of this.#getConnections(node.id, edges)) {
+        const otherId = neighboringCon.otherRouterId;
+        table.set(otherId, {
+          destination: otherId, 
+          nextHop: otherId, 
+          distance: neighboringCon.weight
+        } as IDistance)
+      }
 
       routers.push({
         ...node,
@@ -209,29 +217,14 @@ export default class BellmanFord {
       const rConns = this.#getConnections(currentRouterId, edges);
       const nRHop = r?.table?.get(targetRouterId)?.nextHop;
       const c = rConns.find(c => c.otherRouterId === nRHop)
-      lines.push(`#lines-${c?.lineId}`);
+      lines.push(`#line-${c?.lineId}`);
       if (c === undefined) throw Error ("Failure to find currentRouter");
       currentRouterId = c.otherRouterId;
-      console.log(c)
-      console.log(targetRouterId)
-      console.log(lines)
       failsafe--;
     }
-    return [];
+    return lines;
   }
-  #traverseLines(
-    routers: Node[],
-    connection: IConnection,
-    targetRouterId: number
-  ): string[] {
-    if (connection.otherRouterId === targetRouterId)
-      return [...`#line-${connection.lineId}`];
-    console.log(
-      `${connection.otherRouterId} is learning of router ${targetRouterId} from router ${connection.selfRouterId}`
-    );
-    return [...`#line-${connection.lineId}`];
-  }
-
+ 
   #getRouterById(routers: Node[], id: number) {
     for (let router of routers) {
       if (router.id === id) {
