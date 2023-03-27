@@ -25,6 +25,10 @@ export default class Dijkstra {
     }
     // Remove animations that persist
     animationQ.cleanupPeristentAnimations();
+    // Set all distances to infinity
+    for (const node of nodes) {
+      onChangeRouterWeight(node.id, Infinity);
+    }
     // Set last node to visited as it is not in play
     // This is an artifact of how we consider nodes
     unVisitedNodeIds = this.#setNodeVisited(
