@@ -7,6 +7,7 @@ import {
 } from "../utils/BellmanFordAnimations";
 import { AnimationQueue } from "../utils/Animator";
 import { Dispatch, SetStateAction } from "react";
+import Animation from "../utils/Animation";
 const animationQ = new AnimationQueue("animate-check");
 
 export default class BellmanFord {
@@ -43,7 +44,8 @@ export default class BellmanFord {
         const conns = this.#getConnections(router.id, edges);
         for (const con of conns) {
           let localHasChanged = false;
-          [routers, localHasChanged] = await this.#optimizeTable(
+          let animations = [];
+          [routers, localHasChanged, animations] = await this.#optimizeTable(
             con,
             routers,
             isAnimated,
@@ -51,6 +53,15 @@ export default class BellmanFord {
             edges
           );
           hasChanges = localHasChanged || hasChanges; // Keeps true if any localHasChanged return true once
+               // Animate sending of data
+          if (isAnimated && hasChanges) {
+            await movePacket(`${con.selfRouterId}`, `${con.otherRouterId}`);
+            let awaitList = [];
+            for (const animation of animations) {
+              awaitList.push(animationQ.run(animation));
+            }
+            await Promise.all(awaitList);
+          }
         }
       }
     }
@@ -63,18 +74,16 @@ export default class BellmanFord {
     isAnimated: boolean,
     setNodes: Dispatch<SetStateAction<Node[]>>,
     edges: Edge[]
-  ): Promise<[Node[], boolean]> {
+  ): Promise<[Node[], boolean, Animation[]]> {
     const toRouter = routers.find((r) => connection.otherRouterId === r.id); // Router to optimize
     const fromRouter = routers.find((r) => connection.selfRouterId === r.id);
+    let animations = [] as Animation[];
     if (!toRouter || !fromRouter || !toRouter.table || !fromRouter.table)
       throw new Error("Error, check connections.");
 
     let hasChanged = false; // Assume no changes
     for (const [routerId, distanceInfo] of fromRouter.table.entries()) {
       if (distanceInfo.nextHop === toRouter.id) continue; // Dont 'send' optimize route to nextHop already in path
-
-      // Animate sending of data
-      if (isAnimated) await movePacket(`${fromRouter.id}`, `${toRouter.id}`);
 
       const currentDistance = toRouter.table.get(routerId)?.distance;
       if (!toRouter.table.has(routerId)) {
@@ -95,7 +104,7 @@ export default class BellmanFord {
               return e;
             });
           });
-          await this.#animateNewlyFoundRouter(
+          animations = this.#getNewlyFoundRouterAnimation(
             this.#getLineIds(routers, connection, routerId, edges),
             `#router-img-${routerId}`
           );
@@ -120,7 +129,7 @@ export default class BellmanFord {
               return n;
             })
           );
-          await this.#animateNewlyShortestPath(
+          animations = this.#animateNewlyShortestPath(
             this.#getLineIds(routers, connection, routerId, edges),
             `#router-img-${routerId}`
           );
@@ -135,7 +144,7 @@ export default class BellmanFord {
         return r;
       }
     });
-    return [routers, hasChanged];
+    return [routers, hasChanged, animations];
   }
 
   #initilizeRouters(nodes: Node[], edges: Edge[]): Node[] {
@@ -184,22 +193,18 @@ export default class BellmanFord {
     return connectedEdges;
   }
 
-  async #animateNewlyFoundRouter(
+  #getNewlyFoundRouterAnimation(
     lineIds: string | string[],
     routerId: string | string[]
   ) {
-    const linePromise = animationQ.run(lineBlinkGreen(lineIds));
-    const routerPromise = animationQ.run(routerBlink(routerId));
-    await Promise.allSettled([linePromise, routerPromise]);
+    return [lineBlinkGreen(lineIds), routerBlink(routerId)];
   }
 
-  async #animateNewlyShortestPath(
+  #animateNewlyShortestPath(
     lineIds: string | string[],
     routerId: string | string[]
   ) {
-    const linePromise = animationQ.run(lineBlinkOrange(lineIds));
-    const routerPromise = animationQ.run(routerBlink(routerId));
-    await Promise.allSettled([linePromise, routerPromise]);
+    return [lineBlinkOrange(lineIds), routerBlink(routerId)];
   }
 
   #getLineIds(
