@@ -111,7 +111,7 @@ export default class Dijkstra {
         let edgesTaken = [];
         do {
           const edge = this.#getNodesEdges(edges, n).find((e) => {
-            if (n?.prevNode == undefined) return;
+            if (n?.prevNode === undefined) return;
             return (
               [e.firstNode.id, e.secondNode.id].includes(n?.prevNode?.id) ?? e
             );

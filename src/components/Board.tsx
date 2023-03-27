@@ -1,5 +1,4 @@
 import {
-  useEffect,
   useRef,
   useState,
   createContext,
@@ -205,12 +204,11 @@ export default function Board() {
         if (!res) return;
         setNodes(res.nodes);
       });
+      
     } else if (algorithm === Algorithms.Dijkstra) {
       const res = Dijk.performDijkstra(edges, nodes, rootNode);
       setNodes(res.nodes);
-      console.log(nodes);
-      // Bellman.performBellmanFord({ edges, nodes });
-      return;
+
     } else if (algorithm === Algorithms.BellmenFord) {
       const res = await Bellman.performBellmanFord(
         { edges, nodes },
