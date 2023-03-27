@@ -10,7 +10,7 @@ This projects goal is to create an educational tool to teach algorithms by visua
 ## Current Algorithms Animated
 
 - [x] Dijkstras
-- [ ] Bellman-Ford
+- [x] Bellman-Ford
 
 ## Contributers
 
