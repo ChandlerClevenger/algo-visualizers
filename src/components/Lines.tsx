@@ -1,3 +1,9 @@
+/*
+Liscence: GNU General Public License v2.0
+Author: Chandler Clevenger
+Date: 3/26/2023
+*/
+
 import $ from "jquery";
 import regex from "../utils/my_regex";
 import { LineData } from "../types/bin";

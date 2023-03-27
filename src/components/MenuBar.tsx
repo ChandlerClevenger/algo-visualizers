@@ -1,4 +1,10 @@
-import { FormEvent, useCallback, useEffect, useState } from "react";
+/*
+Liscence: GNU General Public License v2.0
+Author: Chandler Clevenger
+Date: 3/26/2023
+*/
+
+import { useEffect, useState } from "react";
 import { Algorithms } from "../types/bin";
 export default function MenuBar({
   onRunAlgorithm,

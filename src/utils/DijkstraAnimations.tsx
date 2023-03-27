@@ -1,3 +1,9 @@
+/*
+Liscence: GNU General Public License v2.0
+Author: Chandler Clevenger
+Date: 3/26/2023
+*/
+
 import Animation from "./Animation";
 
 export function animateRouterConsidered(selector: string | string[]) {

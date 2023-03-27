@@ -1,3 +1,10 @@
+/*
+Liscence: GNU General Public License v2.0
+Author: Chandler Clevenger
+Date: 3/26/2023
+Purpose: Dijkstra Algorithm implementation for visualization
+*/
+
 import { Edge, Graph, Node } from "../types/bin";
 import { AnimationQueue } from "../utils/Animator";
 import * as animations from "../utils/DijkstraAnimations";

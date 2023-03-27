@@ -1,3 +1,9 @@
+/*
+Liscence: GNU General Public License v2.0
+Author: Chandler Clevenger
+Date: 3/26/2023
+*/
+
 import { useContext, useRef, useState } from "react";
 import { DraggableData } from "react-draggable";
 import { Node, IRouterDropdown, IRouters } from "../types/bin";

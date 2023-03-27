@@ -1,3 +1,9 @@
+/*
+Liscence: GNU General Public License v2.0
+Author: Chandler Clevenger
+Date: 3/26/2023
+*/
+
 export default class Animation {
   private _animation: Keyframe[] | PropertyIndexedKeyframes;
   private _selector: string;

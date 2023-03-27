@@ -1,3 +1,9 @@
+/*
+Liscence: GNU General Public License v2.0
+Author: Chandler Clevenger
+Date: 3/26/2023
+*/
+
 import { useContext, useEffect } from "react";
 import { IRouterDropdown } from "../types/bin";
 import { NodeContext } from "./Board";
