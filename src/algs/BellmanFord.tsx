@@ -57,10 +57,12 @@ export default class BellmanFord {
           if (isAnimated && hasChanges) {
             await movePacket(`${con.selfRouterId}`, `${con.otherRouterId}`);
             let awaitList = [];
-            for (const animation of animations) {
-              awaitList.push(animationQ.run(animation));
+            for (const animationList of animations) {
+              for (const animation of animationList) {
+                awaitList.push(animationQ.run(animation));
+              }
+              await Promise.all(awaitList);
             }
-            await Promise.all(awaitList);
           }
         }
       }
@@ -74,10 +76,10 @@ export default class BellmanFord {
     isAnimated: boolean,
     setNodes: Dispatch<SetStateAction<Node[]>>,
     edges: Edge[]
-  ): Promise<[Node[], boolean, Animation[]]> {
+  ): Promise<[Node[], boolean, [Animation[]]]> {
     const toRouter = routers.find((r) => connection.otherRouterId === r.id); // Router to optimize
     const fromRouter = routers.find((r) => connection.selfRouterId === r.id);
-    let animations = [] as Animation[];
+    let animations = [[]] as [Animation[]];
     if (!toRouter || !fromRouter || !toRouter.table || !fromRouter.table)
       throw new Error("Error, check connections.");
 
@@ -104,10 +106,10 @@ export default class BellmanFord {
               return e;
             });
           });
-          animations = this.#getNewlyFoundRouterAnimation(
+          animations.push(this.#getNewlyFoundRouterAnimation(
             this.#getLineIds(routers, connection, routerId, edges),
             `#router-img-${routerId}`
-          );
+          ));
         }
       } // Otherwise, If distance is shorter, add new path & dist exists
       if (!currentDistance) continue;
@@ -129,10 +131,10 @@ export default class BellmanFord {
               return n;
             })
           );
-          animations = this.#animateNewlyShortestPath(
+          animations.push(this.#animateNewlyShortestPath(
             this.#getLineIds(routers, connection, routerId, edges),
             `#router-img-${routerId}`
-          );
+          ));
         }
       }
     }
